@@ -22,7 +22,7 @@ app.get('/', function(req, res) {
           return null
         });
 
-        response.push(formatMeaning(mainMeaning));
+        response.push(await formatMeaning(mainMeaning));
 
         // fetchCambridge(response);
 
@@ -51,24 +51,39 @@ app.get('/', function(req, res) {
     });
 });
 
-const formatMeaning = (phrase) => {
+const formatMeaning = async (phrase) => {
   let format = phrase;
   let formatArray;
+
+  format = await removeTo(format);
+  format = await removeParentheses(format);
+
+  formatArray = format.split('; ');
+
+  return formatArray
+}
+
+const removeTo = async (phrase) => {
+  let format = phrase;
 
   if(phrase.includes('to ')){
     format = phrase.replace(/to /g, ' ');
   }
 
-  if(phrase.includes('(') && phrase.includes(')')){
-    format = phrase.replace(/\s*\([^()]*\)/g, "");
+  return format;
+} 
+
+const removeParentheses = async (phrase) => {
+  let format = phrase;
+
+  if(format.includes('(') && format.includes(')')){
+    format = format.replace(/\s*\([^()]*\)/g, "");
       if(format.includes('(') && format.includes(')')){
         format = format.replace(/\s*\([^()]*\)/g, "");
       }
   }
 
-  formatArray = format.split('; ');
-
-  return formatArray
+  return format;
 }
 
 
