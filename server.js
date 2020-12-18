@@ -44,10 +44,9 @@ app.get('/', function(req, res) {
           translation.push(element);
         }
         response.push(translation);
-        await browser.close();
-        // Sending the Digimon names to Postman
-
+        
         res.send(response);
+        await browser.close();
     });
 });
 
@@ -64,10 +63,14 @@ const formatMeaning = async (phrase) => {
 }
 
 const removeTo = async (phrase) => {
-  let format = phrase;
+  // add space to beginning of string to get the "to" of first verb, this way avoiding removing "to " blindly 
+  let format = ` ${phrase}`;
 
-  if(phrase.includes('to ')){
-    format = phrase.replace(/to /g, ' ');
+  if(format.includes(' to ')){
+    format = format.replace(/ to /g, ' ');
+    if(format.includes(' be ')){
+      format = format.replace(/ be /g, ' ');
+    }
   }
 
   return format;
