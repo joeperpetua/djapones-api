@@ -2,6 +2,8 @@
 
 # dependencies
 /node_modules
+/api-info
+/translate_modules/api-path.js
 /.pnp
 .pnp.js
 
