@@ -9,11 +9,18 @@ app.get('/', function(req, res) {
     let response = [];
 
     fetchJisho(req.query.word).then(async text => {
+        console.log('Get jisho -- ', Date.now() - start, 'ms');
+
         const resCount = await getCount(text);
         response.push(resCount);
 
         const mainMeaning = await getMainMeaning(text);
         response.push(await formatMeaning(mainMeaning));
+
+        const mainKanji = await getKanji(text);
+        response.push(mainKanji);
+
+        console.log('Get data -- ', Date.now() - start, 'ms');
 
         const translation = [];
         for (let i = 0; i < response[1].length; i++) {
@@ -23,6 +30,8 @@ app.get('/', function(req, res) {
             translation.push(iterationTranslation);
         }
         response.push(translation);
+
+        console.log('Get all meaning translations -- ', Date.now() - start, 'ms');
 
     }).then(() => {
         res.send(response)
@@ -47,6 +56,13 @@ const fetchCambridge = async (request) => {
 
 const getMainMeaning = async (text) => {
     let firstParam = '<span class=\"meaning-meaning\">';
+    let lastParam = '</span>';
+    let extract = text.split(firstParam)[1].split(lastParam)[0];
+    return extract;
+}
+
+const getKanji = async (text) => {
+    let firstParam = '<span class=\"text\">';
     let lastParam = '</span>';
     let extract = text.split(firstParam)[1].split(lastParam)[0];
     return extract;

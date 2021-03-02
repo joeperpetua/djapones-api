@@ -40,16 +40,73 @@ app.get('/', function(req, res) {
         });
         response.push(resCount);
 
-        const mainMeaning = await page.$eval('.meaning-meaning', e => e.innerHTML).catch(e => {
-          console.log(e);
+        const mainResult = await page.$$eval('#primary > div.exact_block > div', (divResponses) => {
+          
+          let words = divResponses.map(
+            (divResponse) => {
+              let query = {
+                kana: '',
+                furigana: [],
+                meanings: []
+              };
+    
+              let furiganas = divResponse.querySelectorAll('.kanji');
+              let meanings = divResponse.querySelectorAll('.meaning-meaning');
+              let types = divResponse.querySelectorAll('.meaning-tags');
+    
+              // get kanji-kana
+              query.kana = divResponse.querySelector('.text').innerText;
+    
+              // get furigana
+              for (let furigana = 0; furigana < furiganas.length; furigana++) {
+                query.furigana.push(furiganas[furigana].innerText);
+              }
+    
+              // initialize meanings and get
+              for (let meaning = 0; meaning < meanings.length; meaning++) {
+                query.meanings.push({meaning: '', type: ''});
+                query.meanings[meaning].meaning = meanings[meaning].innerText;
+              }
+    
+              // get type of word
+              for (let type = 0; type < types.length; type++) {
+                // if note is present, then add the note text as a meaning object
+                if(types[type].innerText === 'Notes'){
+                  let notes = divResponse.querySelectorAll('.meaning-definition.meaning-representation_notes');
+                  for (let note = 0; note < notes.length; note++) {
+                    query.meanings.push({meaning: notes[note].innerText, type: types[type].innerText});
+                  }
+                }else{
+                  query.meanings[type].type = types[type].innerText;
+                }
+              }
+
+              return query
+
+            }
+          );
+
+          return words;
+
+        }).catch(e => {
+          console.log(`Error found: ${e}`);
           return null
         });
 
-        response.push(mainMeaning);
-        const translation = await translate.enToEs(mainMeaning)
+        let translation = [];
+
+        // Do not translate to avoid quota abuse
+        
+        // for (let array = 0; array < mainResult.length; array++) {
+        //   for (let element = 0; element < mainResult[array].length; element++) {
+        //     const temp = await translate.enToEs(mainResult[array][element]);
+        //     translation.push(temp);
+        //   }
+        // }
 
         // console.log('Get all meaning translations -- ', Date.now() - start, 'ms');
 
+        response.push(mainResult);
         response.push(translation);
         res.send(response);
 
