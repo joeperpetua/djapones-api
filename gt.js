@@ -1,4 +1,5 @@
 const translate = require('./translate_modules/translate');
+const preTranslated = require('./translate_modules/translated-terms');
 const express = require('express'); // Adding Express
 const app = express(); // Initializing Express
 const puppeteer = require('puppeteer'); // Adding Puppeteer
@@ -14,7 +15,7 @@ app.get('/', function(req, res) {
   let time;
   let response = [];
 
-    // Launching the Puppeteer controlled headless browser and navigate to the Digimon website
+    // Launching the Puppeteer controlled headless browser and navigate to jisho
     puppeteer.launch({headless: true}).then(async function(browser) {
         // console.log('-------------------------------------')
         // console.log('Launch browser -- ', Date.now() - start, 'ms');
@@ -30,13 +31,16 @@ app.get('/', function(req, res) {
             request.continue();
         });
 
-        await page.goto(`https://jisho.org/search/${req.query.word}`);
+        await page.goto(`https://jisho.org/search/${req.query.word}`).catch(err => err);
 
         // console.log('Goto Jisho -- ', Date.now() - start, 'ms');
 
-        const resCount = await page.$eval('.result_count', e => e.innerHTML).catch(e => {
-          console.log(e);
-          return null
+        const resCount = await page.$eval('.result_count', (response) => {
+          let format = response.innerText.split(' ');
+          return {entriesFound: `${format[2]}`};
+        }).catch(e => {
+          console.log(`Error found: ${e}`);
+          return `Error found: ${e}`
         });
         response.push(resCount);
 
@@ -67,8 +71,10 @@ app.get('/', function(req, res) {
                 query.meanings.push({meaning: '', type: ''});
                 query.meanings[meaning].meaning = meanings[meaning].innerText;
               }
-    
+
               // get type of word
+
+              
               for (let type = 0; type < types.length; type++) {
                 // if note is present, then add the note text as a meaning object
                 if(types[type].innerText === 'Notes'){
@@ -77,10 +83,20 @@ app.get('/', function(req, res) {
                     query.meanings.push({meaning: notes[note].innerText, type: types[type].innerText});
                   }
                 }else{
-                  query.meanings[type].type = types[type].innerText;
+                  if(meanings.length != types.length){
+                    for (let meaning = 0; meaning < meanings.length; meaning++) {
+                      // even counting the note, there are still meanings without type, giving all the meanings a default type
+                      query.meanings[meaning].type = 'General expression';
+                    }
+                  }else{
+                    // all the meanings have a type, proceed to give each its type.
+                    query.meanings[type].type = types[type].innerText;
+                  }
                 }
               }
+              
 
+              
               return query
 
             }
@@ -90,10 +106,30 @@ app.get('/', function(req, res) {
 
         }).catch(e => {
           console.log(`Error found: ${e}`);
-          return null
+          return `Error found: ${e}`
         });
 
-        let translation = [];
+        let translatedResult = mainResult;
+
+        for (let query = 0; query < mainResult.length; query++) {
+          for (let meaning = 0; meaning < mainResult[query].meanings.length; meaning++) {
+            let possibleTypes = mainResult[query].meanings[meaning].type.replace(/, /g, ',').split(',');
+            for (let type = 0; type < possibleTypes.length; type++) {
+              preTranslated.terms.forEach(term => {
+                if(possibleTypes[type] == term[0]){
+                  console.log(type, possibleTypes[type], term[0], term[1]);
+                  if(type == 0){
+                    translatedResult[query].meanings[meaning].type = '';
+                    translatedResult[query].meanings[meaning].type += term[1];
+                  }else{
+                    translatedResult[query].meanings[meaning].type += `, ${term[1]}`;
+                  }
+                }
+                // TODO : else send the type to translate and warn about it 
+              });
+            }
+          }
+        }
 
         // Do not translate to avoid quota abuse
         
@@ -107,7 +143,7 @@ app.get('/', function(req, res) {
         // console.log('Get all meaning translations -- ', Date.now() - start, 'ms');
 
         response.push(mainResult);
-        response.push(translation);
+        //response.push(translatedResult);
         res.send(response);
 
         // console.log('Send response -- ', Date.now() - start, 'ms');
