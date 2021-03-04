@@ -51,7 +51,8 @@ app.get('/', function(req, res) {
               let query = {
                 kana: '',
                 furigana: [],
-                meanings: []
+                englishDefs: [],
+                spanishDefs: []
               };
     
               let furiganas = divResponse.querySelectorAll('.kanji');
@@ -68,34 +69,39 @@ app.get('/', function(req, res) {
     
               // initialize meanings and get
               for (let meaning = 0; meaning < meanings.length; meaning++) {
-                query.meanings.push({meaning: '', type: ''});
-                query.meanings[meaning].meaning = meanings[meaning].innerText;
+                query.englishDefs.push({meaning: '', type: ''});
+                query.englishDefs[meaning].meaning = meanings[meaning].innerText;
+
+                query.spanishDefs.push({meaning: '', type: ''});
+                query.spanishDefs[meaning].meaning = 'Translated meaning';
               }
 
               // get type of word
-
               
               for (let type = 0; type < types.length; type++) {
                 // if note is present, then add the note text as a meaning object
                 if(types[type].innerText === 'Notes'){
                   let notes = divResponse.querySelectorAll('.meaning-definition.meaning-representation_notes');
                   for (let note = 0; note < notes.length; note++) {
-                    query.meanings.push({meaning: notes[note].innerText, type: types[type].innerText});
+                    query.englishDefs.push({meaning: notes[note].innerText, type: types[type].innerText});
+
+                    query.spanishDefs.push({meaning: 'Translated note', type: 'Notas'});
                   }
                 }else{
-                  if(meanings.length != types.length){
+                  if(meanings.length - types.length != -1 && meanings.length - types.length != 0){ // -1 is expected if a note is present, 0 if meaning and type are the same quantity
                     for (let meaning = 0; meaning < meanings.length; meaning++) {
                       // even counting the note, there are still meanings without type, giving all the meanings a default type
-                      query.meanings[meaning].type = 'General expression';
+                      query.englishDefs[meaning].type = 'General expression';
+                      query.spanishDefs[meaning].type = 'Expresión general';
                     }
                   }else{
                     // all the meanings have a type, proceed to give each its type.
-                    query.meanings[type].type = types[type].innerText;
+                    query.englishDefs[type].type = types[type].innerText;
+                    // assign in english, then translate outside the evaluate
+                    query.spanishDefs[type].type = types[type].innerText;
                   }
                 }
               }
-              
-
               
               return query
 
@@ -109,20 +115,27 @@ app.get('/', function(req, res) {
           return `Error found: ${e}`
         });
 
-        let translatedResult = mainResult;
-
         for (let query = 0; query < mainResult.length; query++) {
-          for (let meaning = 0; meaning < mainResult[query].meanings.length; meaning++) {
-            let possibleTypes = mainResult[query].meanings[meaning].type.replace(/, /g, ',').split(',');
+          for (let meaning = 0; meaning < mainResult[query].spanishDefs.length; meaning++) {
+            // translate meanings except other forms and notes
+            if(mainResult[query].spanishDefs[meaning].type != 'Notas' && mainResult[query].spanishDefs[meaning].type != 'Other forms'){
+              // Do not translate to avoid quota abuse
+              // mainResult[query].spanishDefs[meaning].meaning = await translate.enToEs(mainResult[query].englishDefs[meaning].meaning);
+            }else{
+              mainResult[query].spanishDefs[meaning].meaning = mainResult[query].englishDefs[meaning].meaning;
+            }
+
+            // use pre translated terms
+            let possibleTypes = mainResult[query].spanishDefs[meaning].type.replace(/, /g, ',').split(',');
             for (let type = 0; type < possibleTypes.length; type++) {
               preTranslated.terms.forEach(term => {
                 if(possibleTypes[type] == term[0]){
                   console.log(type, possibleTypes[type], term[0], term[1]);
                   if(type == 0){
-                    translatedResult[query].meanings[meaning].type = '';
-                    translatedResult[query].meanings[meaning].type += term[1];
+                    mainResult[query].spanishDefs[meaning].type = '';
+                    mainResult[query].spanishDefs[meaning].type += term[1];
                   }else{
-                    translatedResult[query].meanings[meaning].type += `, ${term[1]}`;
+                    mainResult[query].spanishDefs[meaning].type += `, ${term[1]}`;
                   }
                 }
                 // TODO : else send the type to translate and warn about it 
@@ -131,14 +144,6 @@ app.get('/', function(req, res) {
           }
         }
 
-        // Do not translate to avoid quota abuse
-        
-        // for (let array = 0; array < mainResult.length; array++) {
-        //   for (let element = 0; element < mainResult[array].length; element++) {
-        //     const temp = await translate.enToEs(mainResult[array][element]);
-        //     translation.push(temp);
-        //   }
-        // }
 
         // console.log('Get all meaning translations -- ', Date.now() - start, 'ms');
 
@@ -149,6 +154,9 @@ app.get('/', function(req, res) {
         // console.log('Send response -- ', Date.now() - start, 'ms');
 
         await browser.close();
+    }).catch(e => {
+      console.log(`Error found: ${e}`);
+      return `Error found: ${e}`
     });
 });
 
