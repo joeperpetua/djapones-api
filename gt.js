@@ -15,6 +15,16 @@ app.get('/', function(req, res) {
   let time;
   let response = [];
 
+  if (req.query.src == undefined || req.query.src == null || req.query.src == '') {
+    res.send({error: 'No src lang specified, bad request.', code: 400});
+    return false;
+  }
+
+  if (req.query.word == undefined || req.query.word == null || req.query.word == '') {
+    res.send({error: 'No word specified, bad request.', code: 400});
+    return false;
+  }
+
     // Launching the Puppeteer controlled headless browser and navigate to jisho
     puppeteer.launch({headless: true}).then(async function(browser) {
         // console.log('-------------------------------------')
@@ -31,7 +41,18 @@ app.get('/', function(req, res) {
             request.continue();
         });
 
-        await page.goto(`https://jisho.org/search/${req.query.word}`).catch(err => err);
+        // check src lang
+        switch (req.query.src) {
+          case 'jp':
+            await page.goto(`https://jisho.org/search/${req.query.word}`).catch(err => err);
+            break;
+          
+          case 'es':
+            let tempTrans = await translate.esToEn(req.query.word);
+            await page.goto(`https://jisho.org/search/"${tempTrans}"`).catch(err => err);
+            break;
+        }
+        
 
         // console.log('Goto Jisho -- ', Date.now() - start, 'ms');
 
@@ -115,12 +136,17 @@ app.get('/', function(req, res) {
           return `Error found: ${e}`
         });
 
+        // if the query is in spanish, just show 5 results
+        if(req.query.src == 'es'){
+          mainResult.length = 5;
+        }
+
         for (let query = 0; query < mainResult.length; query++) {
           for (let meaning = 0; meaning < mainResult[query].spanishDefs.length; meaning++) {
             // translate meanings except other forms and notes
             if(mainResult[query].spanishDefs[meaning].type != 'Notas' && mainResult[query].spanishDefs[meaning].type != 'Other forms'){
               // Do not translate to avoid quota abuse
-              // mainResult[query].spanishDefs[meaning].meaning = await translate.enToEs(mainResult[query].englishDefs[meaning].meaning);
+              mainResult[query].spanishDefs[meaning].meaning = await removeDuplicates(await translate.enToEs(mainResult[query].englishDefs[meaning].meaning));
             }else{
               mainResult[query].spanishDefs[meaning].meaning = mainResult[query].englishDefs[meaning].meaning;
             }
@@ -130,7 +156,6 @@ app.get('/', function(req, res) {
             for (let type = 0; type < possibleTypes.length; type++) {
               preTranslated.terms.forEach(term => {
                 if(possibleTypes[type] == term[0]){
-                  console.log(type, possibleTypes[type], term[0], term[1]);
                   if(type == 0){
                     mainResult[query].spanishDefs[meaning].type = '';
                     mainResult[query].spanishDefs[meaning].type += term[1];
@@ -159,6 +184,13 @@ app.get('/', function(req, res) {
       return `Error found: ${e}`
     });
 });
+
+const removeDuplicates = async (str) => {
+  let uniqueList = str.split('; ').filter(function(allItems,i,a){
+    return i == a.indexOf(allItems);
+  }).join('; ');
+  return uniqueList;
+}
 
 
 // Making Express listen on port 7000
