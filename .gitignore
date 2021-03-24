@@ -6,6 +6,10 @@ api-info/
 **/translate_modules/api-path.js
 **/.pnp
 **/.pnp.js
+**/firebase.json
+**/firestore.indexes.json
+**/firestore.rules
+**/.firebaserc
 
 # testing
 **/coverage

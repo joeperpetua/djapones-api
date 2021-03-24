@@ -1,5 +1,5 @@
 const {TranslationServiceClient} = require('@google-cloud/translate');
-const projectId = 'jisho-translate-en-es';
+const projectId = 'djapones';
 const location = 'global';
 const path = require('./api-path');
 const keyFilename = path.path;
