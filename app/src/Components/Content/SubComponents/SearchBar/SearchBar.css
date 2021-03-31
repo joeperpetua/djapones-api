@@ -1,0 +1,117 @@
+.search-bar{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 2% auto;
+    width: max-content;
+    line-height: 4em;
+    border-radius: 100px;
+    outline: none;
+    padding: 0 0 0 2%;
+    background: rgb(207, 207, 207);
+}
+
+.search-input{
+    width: 50vw;
+    font-size: 2em;
+    border: none;
+    outline: none;
+    background: transparent;
+}
+
+.search-btn-esp, .search-btn-jap{
+    display: flex;
+    width: max-content;
+    line-height: 4em;
+    border-radius: 100px;
+    outline: none;
+    cursor: pointer;
+}
+
+.search-btn-esp{
+    background: #f7be00;
+}
+
+.search-btn-jap{
+    background: #b6002c;
+}
+
+.search-lang{
+    cursor: pointer;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: white;
+    font-weight: bold;
+    padding: 0 5px 0 10px;
+}
+
+.search-search{
+    display: flex;
+    width: max-content;
+    background: #cfcfcf;
+    line-height: 4em;
+    border-radius: 100px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.material-icons{
+    width: 1.5em;
+    line-height: 2em;
+}
+
+/* Tooltip */
+
+.tooltip {
+    position: relative;
+    line-height: 1em;
+    cursor: pointer;
+}
+  
+/* Tooltip text */
+.tooltip .tooltiptext {
+    line-height: 1.5em;
+    width: -moz-fit-content;
+    width: fit-content;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    padding: 20%;
+    border-radius: 6px;
+    position: absolute;
+    z-index: 1;
+    top: 125%;
+    right: 0;
+    margin-left: -75vw;
+    opacity: 1;
+    transition: ease 0.3s;
+}
+  
+/* Tooltip arrow */
+.tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: -2vh;
+    right: 1.5vh;
+    transform: scale(2.5) rotate(180deg);
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+}
+
+.hidden{
+    visibility: hidden;
+    opacity: 0!important;
+}
+
+.unselectable {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}

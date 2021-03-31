@@ -1,10 +1,13 @@
 import React from 'react';
+import SearchBar from '../SubComponents/SearchBar/SearchBar';
 
 class Search extends React.Component{
 
     render(){
         return(
-            <h1>Search</h1>
+            <div>
+                <SearchBar tooltip='hidden' />
+            </div>
         );
     };
 }

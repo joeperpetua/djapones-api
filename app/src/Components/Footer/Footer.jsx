@@ -1,6 +1,10 @@
+import "./Footer.css";
+
 function Footer() {
     return(
-        <h1>Footer</h1>
+        <div className="Footer">
+            <h1>Footer</h1>
+        </div>
     );
 }
 
