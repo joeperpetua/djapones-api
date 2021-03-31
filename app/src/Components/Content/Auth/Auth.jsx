@@ -27,9 +27,11 @@ class Auth extends React.Component{
             } else {
                 this.setState({
                     logged: false,
-                    user: null
+                    user_uid: null,
+                    user_refreshToken: null,
+                    user_email: null
                 });
-                console.log('ww');
+                console.log('log');
             }
         });
     }
