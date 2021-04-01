@@ -1,5 +1,6 @@
 const translate = require('./translate_modules/translate');
 const preTranslated = require('./translate_modules/translated-terms');
+var cors = require('cors')
 const express = require('express'); // Adding Express
 const app = express(); // Initializing Express
 const puppeteer = require('puppeteer'); // Adding Puppeteer
@@ -9,8 +10,19 @@ const puppeteer = require('puppeteer'); // Adding Puppeteer
 // const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 // puppeteer.use(StealthPlugin());
 
+var whitelist = ['http://localhost:3000', 'https://djapones.web.app', 'https://djapones.firebaseapp.com'] 
+var corsOptions = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1 || !origin) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  }
+}
+
 // Wrapping the Puppeteer browser logic in a GET request
-app.get('/', function(req, res) {
+app.get('/', cors(corsOptions), function(req, res) {
   const start = Date.now();
   let time;
   let response = [];
