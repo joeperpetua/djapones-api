@@ -8,10 +8,11 @@
 }
 
 .kana-container{
-    border: solid 1px;
-    border-right: none;
-    border-radius: 15px 0 0 15px;
-    padding-right: 5%;
+    display: flex;
+    flex-direction: column;
+    border: solid 1px grey;
+    border-radius: 15px;
+    padding: 0 0 0 2vw;
     height: fit-content;
 }
 
@@ -26,9 +27,12 @@
 }
 
 .definition-container{
-    border: solid 1px;
-    border-radius: 0 15px 15px 15px;
-    padding: 2vw;
+    height: max-content;
+    margin: -2vw 0 0 0;
+    border: solid 1px grey;
+    border-top: none;
+    border-radius: 0 0 15px 15px;
+    padding: 4vw 2vw 0vw 2vw;
 }
 
 .definition-type{
