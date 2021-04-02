@@ -7,6 +7,7 @@ class SearchBar extends React.Component{
         this.toggleLang = this.toggleLang.bind(this);
         this.toggleTooltip = this.toggleTooltip.bind(this);
         this.search = this.search.bind(this);
+        this.handleKeyDown = this.handleKeyDown.bind(this);
         this.state = {
             tooltip: this.props.tooltip
         };
@@ -49,13 +50,19 @@ class SearchBar extends React.Component{
         
     }
 
+    handleKeyDown(event) {
+        if(event.keyCode === 13) { 
+            this.search();
+        }
+    }
+
     render(){
         console.log(this.state.tooltip);
 
         return(
             <div>
                 <div className="search-bar">
-                    <input className="search-input" type="text"/>
+                    <input onKeyDown={this.handleKeyDown} className="search-input" type="text"/>
                     <div className="search-btn-esp">
                         <button onClick={(e) => {this.toggleLang(e.target.innerHTML)}} className="search-lang">ESP</button>
                         <button onClick={this.search} className="search-search">
