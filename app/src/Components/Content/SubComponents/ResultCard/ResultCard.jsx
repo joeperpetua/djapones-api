@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactFuri from 'react-furi';
 
 import './ResultCard.css';
 
@@ -8,12 +9,11 @@ class ResultCard extends React.Component{
     }
 
     render(){
-        const { kana, furigana, spanishDefs} = this.props.data;
+        const { kana, reading, spanishDefs} = this.props.data;
         return(
             <div className="ResultCard">
                 <div className="kana-container">
-                    <p className="kana-furigana">{furigana}</p>
-                    <p className="kana-text">{kana}</p>
+                    <ReactFuri word={kana} reading={reading} />
                 </div>
                 <div className="definition-container">
                     {spanishDefs.map(definition => (

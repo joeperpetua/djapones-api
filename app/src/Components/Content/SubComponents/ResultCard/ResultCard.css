@@ -1,9 +1,10 @@
 .ResultCard{
     display: flex;
+    flex-direction: column;
     width: 80vw;
     margin: 2% auto;
     justify-content: flex-start;
-    justify-items: center;
+    justify-items: left;
 }
 
 .kana-container{

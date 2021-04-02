@@ -17,6 +17,7 @@
     "node-fetch": "^2.6.1",
     "nodemon": "^2.0.6",
     "puppeteer": "^8.0.0",
+    "wanakana": "^4.0.2",
     "website-scraper": "^4.2.3"
   }
 }

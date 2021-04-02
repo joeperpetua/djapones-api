@@ -1,6 +1,7 @@
 import React from 'react';
 import SearchBar from '../SubComponents/SearchBar/SearchBar';
 import ResultCard from '../SubComponents/ResultCard/ResultCard';
+import loading from '../../../res/loading.gif';
 
 class Search extends React.Component{
     constructor(props){
@@ -47,7 +48,7 @@ class Search extends React.Component{
             return (
                 <div>
                     <SearchBar tooltip='hidden' query={this.state.request[1]} lang={this.state.request[0]} />
-                    <div>Loading...</div>
+                    <img src={loading} alt="Cargando" width="300vw" />
                 </div>
             );
         } else {
