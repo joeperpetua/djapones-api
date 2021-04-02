@@ -1,0 +1,42 @@
+.ResultCard{
+    display: flex;
+    width: 80vw;
+    margin: 2% auto;
+    justify-content: flex-start;
+    justify-items: center;
+}
+
+.kana-container{
+    border: solid 1px;
+    border-right: none;
+    border-radius: 15px 0 0 15px;
+    padding-right: 5%;
+    height: fit-content;
+}
+
+.kana-furigana{
+    margin: 15px 0 0 15px;
+}
+
+.kana-text{
+    margin: 0 0 15px 15px;
+    font-size: x-large;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.definition-container{
+    border: solid 1px;
+    border-radius: 0 15px 15px 15px;
+    padding: 2vw;
+}
+
+.definition-type{
+    text-align: left;
+    margin: 0;
+}
+
+.definition-text{
+    text-align: left;
+    margin-top: 0;
+    font-size: x-large;
+}

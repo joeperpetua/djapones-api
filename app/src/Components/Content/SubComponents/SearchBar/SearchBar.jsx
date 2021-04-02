@@ -6,13 +6,10 @@ class SearchBar extends React.Component{
         super(props);
         this.toggleLang = this.toggleLang.bind(this);
         this.toggleTooltip = this.toggleTooltip.bind(this);
+        this.search = this.search.bind(this);
         this.state = {
             tooltip: this.props.tooltip
         };
-    }
-
-    componentWillMount(){
-
     }
 
     toggleLang(lang){
@@ -39,6 +36,19 @@ class SearchBar extends React.Component{
         document.getElementsByClassName('tooltiptext')[0].classList.toggle("hidden");
     }
 
+    search(){
+        let src = document.getElementsByClassName('search-lang')[0].innerHTML;
+        let word = document.getElementsByClassName('search-input')[0].value;
+        if(src === 'ESP'){
+            window.location.pathname = `search/es/${word}`;
+        }
+        
+        if(src === 'JAP'){
+            window.location.pathname = `search/jp/${word}`;
+        }
+        
+    }
+
     render(){
         console.log(this.state.tooltip);
 
@@ -48,7 +58,7 @@ class SearchBar extends React.Component{
                     <input className="search-input" type="text"/>
                     <div className="search-btn-esp">
                         <button onClick={(e) => {this.toggleLang(e.target.innerHTML)}} className="search-lang">ESP</button>
-                        <button className="search-search">
+                        <button onClick={this.search} className="search-search">
                             <span className="material-icons">search</span>
                         </button>
                     </div>
