@@ -25,10 +25,13 @@ var corsOptions = {
 app.get('/', cors(corsOptions), function(req, res) {
   const start = Date.now();
   let time;
-  let response = [];
+  let response = {
+    code: '',
+    data: []
+  };
 
   if (req.query.src == undefined || req.query.src == null || req.query.src == '') {
-    res.sendres.status(400).send({error: 'No src lang specified, bad request.', code: 400});
+    res.status(400).send({error: 'No src lang specified, bad request.', code: 400});
     return false;
   }
 
@@ -38,7 +41,7 @@ app.get('/', cors(corsOptions), function(req, res) {
   }
 
     // Launching the Puppeteer controlled headless browser and navigate to jisho
-    puppeteer.launch({headless: true}).then(async function(browser) {
+    puppeteer.launch({headless: false}).then(async function(browser) {
         // console.log('-------------------------------------')
         // console.log('Launch browser -- ', Date.now() - start, 'ms');
 
@@ -56,13 +59,19 @@ app.get('/', cors(corsOptions), function(req, res) {
         // check src lang
         switch (req.query.src) {
           case 'jp':
-            await page.goto(`https://jisho.org/search/${req.query.word}`).catch(err => err);
+            let lowerCaseJP = req.query.src.toLocaleLowerCase();
+            await page.goto(`https://jisho.org/search/${lowerCaseJP}`).catch(err => err);
             break;
           
           case 'es':
             let tempTrans = await translate.esToEn(req.query.word);
-            await page.goto(`https://jisho.org/search/"${tempTrans}"`).catch(err => err);
+            let lowerCaseES = tempTrans.toLocaleLowerCase();
+            console.log(tempTrans);
+            await page.goto(`https://jisho.org/search/"${lowerCaseES}"`).catch(err => err);
             break;
+
+          default:
+            console.log(`Unsupported lang, ${req.query.src}`);
         }
         
 
@@ -72,10 +81,10 @@ app.get('/', cors(corsOptions), function(req, res) {
           let format = response.innerText.split(' ');
           return {entriesFound: `${format[2]}`};
         }).catch(e => {
-          res.status(500).send({error: 'No src lang specified, bad request.', code: 500});
+          res.status(500).send({error: 'No results found.', code: 500});
           return false;
         });
-        response.push(resCount);
+        response.data.push(resCount);
 
         const mainResult = await page.$$eval('#primary > div.exact_block > div', (divResponses) => {
           
@@ -144,8 +153,8 @@ app.get('/', cors(corsOptions), function(req, res) {
           return words;
 
         }).catch(e => {
-          console.log(`Error found: ${e}`);
-          res.status(500).send({error: `Error found: ${e}, server error.`, code: 500});
+          console.log(`Error found in main result evaluation: ${e}`);
+          res.status(500).send({error: `Error found in main result evaluation: ${e}, server error.`, code: 500});
           return false;
         });
 
@@ -154,7 +163,13 @@ app.get('/', cors(corsOptions), function(req, res) {
           mainResult.length = 5;
         }
 
+        
+
         for (let query = 0; query < mainResult.length; query++) {
+          console.log(mainResult.length)
+          console.log(mainResult)
+          console.log(`${query} english def ${mainResult[query].englishDefs}`)
+          console.log(`${query} spanish def ${mainResult[query].spanishDefs}`)
           for (let meaning = 0; meaning < mainResult[query].spanishDefs.length; meaning++) {
             // translate meanings except other forms and notes
             if(mainResult[query].spanishDefs[meaning].type != 'Notas' && mainResult[query].spanishDefs[meaning].type != 'Other forms'){
@@ -170,6 +185,7 @@ app.get('/', cors(corsOptions), function(req, res) {
                 mainResult[query].spanishDefs[meaning].meaning = await removeDuplicates(translationNotFormatted);
               }
             }else{
+              console.log(mainResult[query].spanishDefs[meaning].meaning);
               mainResult[query].spanishDefs[meaning].meaning = mainResult[query].englishDefs[meaning].meaning;
             }
 
@@ -194,8 +210,9 @@ app.get('/', cors(corsOptions), function(req, res) {
 
         // console.log('Get all meaning translations -- ', Date.now() - start, 'ms');
 
-        response.push(mainResult);
-        //response.push(translatedResult);
+        response.data.push(mainResult);
+        response.code = 200;
+        //response.data.push(translatedResult);
         res.status(200).send(response);
 
         // console.log('Send response -- ', Date.now() - start, 'ms');
