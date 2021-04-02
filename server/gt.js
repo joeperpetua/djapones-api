@@ -1,5 +1,6 @@
 const translate = require('./translate_modules/translate');
 const preTranslated = require('./translate_modules/translated-terms');
+const wanakana = require('wanakana');
 var cors = require('cors')
 const express = require('express'); // Adding Express
 const app = express(); // Initializing Express
@@ -96,6 +97,8 @@ app.get('/', cors(corsOptions), function(req, res) {
               let query = {
                 kana: '',
                 furigana: [],
+                reading: '',
+                romaji: '',
                 englishDefs: [],
                 spanishDefs: []
               };
@@ -169,6 +172,10 @@ app.get('/', cors(corsOptions), function(req, res) {
         
 
         for (let query = 0; query < mainResult.length; query++) {
+          // initialize reading and romaji
+          mainResult[query].reading = await getReading(mainResult[query].kana, mainResult[query].furigana);
+          mainResult[query].romaji = wanakana.toRomaji(mainResult[query].reading);
+
           for (let meaning = 0; meaning < mainResult[query].spanishDefs.length; meaning++) {
             // translate meanings except other forms and notes
             if(mainResult[query].spanishDefs[meaning].type != 'Notas' && mainResult[query].spanishDefs[meaning].type != 'Other forms'){
@@ -230,6 +237,32 @@ const removeDuplicates = async (str) => {
   return uniqueList;
 }
 
+const getReading = async (kana, furigana) => {
+  console.log('------------------------')
+  let kanji = [];
+  let reading = kana;
+
+  for (const char of kana) {
+    if(isKanji(char)){
+      console.log(`is kanji ${char}`);
+      kanji.push(char);
+    }
+  }
+
+  if(kanji.lenght === furigana.lenght){
+    for (let i = 0; i < kanji.length; i++) {
+      console.log(kanji[i], furigana[i])
+      reading = reading.replace(kanji[i], furigana[i])
+    }
+  }
+
+  console.log(reading);
+  return reading;
+}
+
+const isKanji = (ch) => {
+  return (ch >= "\u4e00" && ch <= "\u9faf") || (ch >= "\u3400" && ch <= "\u4dbf");
+}
 
 // Making Express listen on port 7000
 app.listen(7000, function() {
