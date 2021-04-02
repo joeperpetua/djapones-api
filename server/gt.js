@@ -59,7 +59,8 @@ app.get('/', cors(corsOptions), function(req, res) {
         // check src lang
         switch (req.query.src) {
           case 'jp':
-            let lowerCaseJP = req.query.src.toLocaleLowerCase();
+            let lowerCaseJP = req.query.word.toLocaleLowerCase();
+            console.log(tempTrans);
             await page.goto(`https://jisho.org/search/${lowerCaseJP}`).catch(err => err);
             break;
           
@@ -166,10 +167,6 @@ app.get('/', cors(corsOptions), function(req, res) {
         
 
         for (let query = 0; query < mainResult.length; query++) {
-          console.log(mainResult.length)
-          console.log(mainResult)
-          console.log(`${query} english def ${mainResult[query].englishDefs}`)
-          console.log(`${query} spanish def ${mainResult[query].spanishDefs}`)
           for (let meaning = 0; meaning < mainResult[query].spanishDefs.length; meaning++) {
             // translate meanings except other forms and notes
             if(mainResult[query].spanishDefs[meaning].type != 'Notas' && mainResult[query].spanishDefs[meaning].type != 'Other forms'){
@@ -185,7 +182,6 @@ app.get('/', cors(corsOptions), function(req, res) {
                 mainResult[query].spanishDefs[meaning].meaning = await removeDuplicates(translationNotFormatted);
               }
             }else{
-              console.log(mainResult[query].spanishDefs[meaning].meaning);
               mainResult[query].spanishDefs[meaning].meaning = mainResult[query].englishDefs[meaning].meaning;
             }
 
