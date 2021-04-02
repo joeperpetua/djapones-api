@@ -31,17 +31,17 @@ app.get('/', cors(corsOptions), function(req, res) {
   };
 
   if (req.query.src == undefined || req.query.src == null || req.query.src == '') {
-    res.status(400).send({error: 'No src lang specified, bad request.', code: 400});
+    res.status(400).send({error: 'Idioma de origen no especificado, petición incorrecta.', code: 400});
     return false;
   }
 
   if (req.query.word == undefined || req.query.word == null || req.query.word == '') {
-    res.status(400).send({error: 'No word specified, bad request.', code: 400});
+    res.status(400).send({error: 'Termino no especificado, petición incorrecta.', code: 400});
     return false;
   }
 
     // Launching the Puppeteer controlled headless browser and navigate to jisho
-    puppeteer.launch({headless: false}).then(async function(browser) {
+    puppeteer.launch({headless: true}).then(async function(browser) {
         // console.log('-------------------------------------')
         // console.log('Launch browser -- ', Date.now() - start, 'ms');
 
@@ -60,19 +60,21 @@ app.get('/', cors(corsOptions), function(req, res) {
         switch (req.query.src) {
           case 'jp':
             let lowerCaseJP = req.query.word.toLocaleLowerCase();
-            console.log(tempTrans);
+            console.log(lowerCaseJP);
             await page.goto(`https://jisho.org/search/${lowerCaseJP}`).catch(err => err);
             break;
           
           case 'es':
             let tempTrans = await translate.esToEn(req.query.word);
             let lowerCaseES = tempTrans.toLocaleLowerCase();
-            console.log(tempTrans);
+            console.log(lowerCaseES);
             await page.goto(`https://jisho.org/search/"${lowerCaseES}"`).catch(err => err);
             break;
 
           default:
             console.log(`Unsupported lang, ${req.query.src}`);
+            res.status(400).send({error: `Idioma de origen no soportado: "${req.query.src}" Los idiomas soportados son español (es) y japonés (jp). Petición incorrecta.`, code: 400});
+            return false;
         }
         
 
@@ -82,7 +84,7 @@ app.get('/', cors(corsOptions), function(req, res) {
           let format = response.innerText.split(' ');
           return {entriesFound: `${format[2]}`};
         }).catch(e => {
-          res.status(500).send({error: 'No results found.', code: 500});
+          res.status(500).send({error: `No se ha encontrado ningún resultado para la busqueda de "${req.query.word}"`, code: 500});
           return false;
         });
         response.data.push(resCount);
@@ -155,7 +157,7 @@ app.get('/', cors(corsOptions), function(req, res) {
 
         }).catch(e => {
           console.log(`Error found in main result evaluation: ${e}`);
-          res.status(500).send({error: `Error found in main result evaluation: ${e}, server error.`, code: 500});
+          res.status(500).send({error: `Error de busqueda en el servidor, por favor contacte con los administradores: ${e}, eval / HTTP 500.`, code: 500});
           return false;
         });
 
@@ -176,7 +178,7 @@ app.get('/', cors(corsOptions), function(req, res) {
               // check for errors
               if(translationNotFormatted.includes('error 500:')){
                 console.log(`Error: ${translationNotFormatted}`);
-                res.status(500).send({error: `Translation error, server error.\n${translationNotFormatted}`, code: 500});
+                res.status(500).send({error: `Error de busqueda en el servidor, por favor contacte con los administradores:\n${translationNotFormatted}, trans API / HTTP 500.`, code: 500});
                 return false;
               }else{
                 mainResult[query].spanishDefs[meaning].meaning = await removeDuplicates(translationNotFormatted);
@@ -216,7 +218,7 @@ app.get('/', cors(corsOptions), function(req, res) {
         await browser.close();
     }).catch(e => {
       console.log(`Error found: ${e}`);
-      res.status(500).send({error: `Error found: ${e}, server error.`, code: 500});
+      res.status(500).send({error: `Error de busqueda en el servidor, por favor contacte con los administradores: ${e}, HTTP 500.`, code: 500});
       return false;
     });
 });
