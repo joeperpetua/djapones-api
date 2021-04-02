@@ -58,14 +58,18 @@ class SearchBar extends React.Component{
 
     render(){
         let lastLang = 'JAP';
+        let lastQuery = '';
         if(this.props.lang === 'es'){
             lastLang = 'ESP';
+        }
+        if(this.props.query){
+            lastQuery = decodeURI(this.props.query);
         }
 
         return(
             <div>
                 <div className="search-bar">
-                    <input onKeyDown={this.handleKeyDown} className="search-input" type="text" defaultValue={decodeURI(this.props.query)} />
+                    <input onKeyDown={this.handleKeyDown} className="search-input" type="text" defaultValue={lastQuery} />
                     <div className={`search-btn-${lastLang}`}>
                         <button onClick={(e) => {this.toggleLang(e.target.innerHTML)}} className="search-lang">{lastLang}</button>
                         <button onClick={this.search} className="search-search">
