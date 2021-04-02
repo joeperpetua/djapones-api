@@ -13,13 +13,13 @@
 
 .search-input{
     width: 50vw;
-    font-size: 2em;
+    font-size: 1.6em;
     border: none;
     outline: none;
     background: transparent;
 }
 
-.search-btn-esp, .search-btn-jap{
+.search-btn-ESP, .search-btn-JAP{
     display: flex;
     width: max-content;
     line-height: 4em;
@@ -28,11 +28,11 @@
     cursor: pointer;
 }
 
-.search-btn-esp{
+.search-btn-ESP{
     background: #f7be00;
 }
 
-.search-btn-jap{
+.search-btn-JAP{
     background: #b6002c;
 }
 

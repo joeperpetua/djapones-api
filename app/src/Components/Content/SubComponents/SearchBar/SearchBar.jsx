@@ -7,9 +7,9 @@ class SearchBar extends React.Component{
         this.toggleLang = this.toggleLang.bind(this);
         this.toggleTooltip = this.toggleTooltip.bind(this);
         this.search = this.search.bind(this);
-        this.handleKeyDown = this.handleKeyDown.bind(this);
+        this.handleKeyDown = this.handleKeyDown.bind(this); 
         this.state = {
-            tooltip: this.props.tooltip
+            tooltip: this.props.tooltip,
         };
     }
 
@@ -17,14 +17,14 @@ class SearchBar extends React.Component{
         switch(lang){
             case 'ESP':
                 document.getElementsByClassName('search-lang')[0].innerHTML = 'JAP';
-                document.getElementsByClassName('search-btn-esp')[0].classList.toggle("search-btn-jap");
-                document.getElementsByClassName('search-btn-esp')[0].classList.toggle("search-btn-esp");
+                document.getElementsByClassName('search-btn-ESP')[0].classList.toggle("search-btn-JAP");
+                document.getElementsByClassName('search-btn-ESP')[0].classList.toggle("search-btn-ESP");
                 break;
 
             case 'JAP':
                 document.getElementsByClassName('search-lang')[0].innerHTML = 'ESP';
-                document.getElementsByClassName('search-btn-jap')[0].classList.toggle("search-btn-esp");
-                document.getElementsByClassName('search-btn-jap')[0].classList.toggle("search-btn-jap");
+                document.getElementsByClassName('search-btn-JAP')[0].classList.toggle("search-btn-ESP");
+                document.getElementsByClassName('search-btn-JAP')[0].classList.toggle("search-btn-JAP");
                 break;
             
             default:
@@ -57,14 +57,17 @@ class SearchBar extends React.Component{
     }
 
     render(){
-        console.log(this.state.tooltip);
+        let lastLang = 'JAP';
+        if(this.props.lang === 'es'){
+            lastLang = 'ESP';
+        }
 
         return(
             <div>
                 <div className="search-bar">
-                    <input onKeyDown={this.handleKeyDown} className="search-input" type="text"/>
-                    <div className="search-btn-esp">
-                        <button onClick={(e) => {this.toggleLang(e.target.innerHTML)}} className="search-lang">ESP</button>
+                    <input onKeyDown={this.handleKeyDown} className="search-input" type="text" defaultValue={decodeURI(this.props.query)} />
+                    <div className={`search-btn-${lastLang}`}>
+                        <button onClick={(e) => {this.toggleLang(e.target.innerHTML)}} className="search-lang">{lastLang}</button>
                         <button onClick={this.search} className="search-search">
                             <span className="material-icons">search</span>
                         </button>

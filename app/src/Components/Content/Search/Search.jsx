@@ -39,21 +39,21 @@ class Search extends React.Component{
         if (error) {
             return (
                 <div>
-                    <SearchBar tooltip='hidden' />
+                    <SearchBar tooltip='hidden' query={this.state.request[1]} lang={this.state.request[0]} />
                     <div>{error}</div>
                 </div>
             );
         } else if (!isLoaded) {
             return (
                 <div>
-                    <SearchBar tooltip='hidden' />
+                    <SearchBar tooltip='hidden' query={this.state.request[1]} lang={this.state.request[0]} />
                     <div>Loading...</div>
                 </div>
             );
         } else {
             return (
                 <div>
-                    <SearchBar tooltip='hidden' />
+                    <SearchBar tooltip='hidden' query={this.state.request[1]} lang={this.state.request[0]} />
                     {results.map(result => (
                         <ResultCard key={result.kana} data={result} />
                     ))}
