@@ -7,6 +7,7 @@ const cors = require('cors')
 const express = require('express'); // Adding Express
 const app = express(); // Initializing Express
 const puppeteer = require('puppeteer'); // Adding Puppeteer
+const { default: fetch } = require('node-fetch');
 
 
 
@@ -263,6 +264,11 @@ const isKanji = (ch) => {
   return (ch >= "\u4e00" && ch <= "\u9faf") || (ch >= "\u3400" && ch <= "\u4dbf");
 }
 
+const fetchJisho = async (keyword) => {
+  const res = await fetch(`https://jisho.org/api/v1/search/words?keyword=${keyword}`);
+  return res;
+}
+
 const searchByKanji = (kana) => {
   let query = {
     kana: '',
@@ -382,9 +388,6 @@ const searchByKanji = (kana) => {
 
   return query;
 }
-
-
-console.log(searchByKanji('父さん').englishDefs);
 
 const searchByReading = (kana) => {
 
