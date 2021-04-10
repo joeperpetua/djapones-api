@@ -1,14 +1,14 @@
 {
-  "name": "jisho-esp",
+  "name": "djapones",
   "version": "1.0.0",
-  "description": "",
+  "description": "API for DJaponES site",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node gt.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Joel Perpetua",
   "license": "ISC",
   "dependencies": {
     "@google-cloud/translate": "^6.1.0",

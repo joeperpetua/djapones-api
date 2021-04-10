@@ -1,10 +1,11 @@
 const translate = require('./translate_modules/translate');
 const preTranslated = require('./translate_modules/translated-terms');
-const wanakana = require('wanakana');
+const utils = require('./translate_modules/utils');
 const cors = require('cors')
 const express = require('express'); // Adding Express
 const app = express(); // Initializing Express
-const { default: fetch } = require('node-fetch');
+const fetch = require('node-fetch');
+
 
 var whitelist = ['http://localhost:3000', 'https://djapones.web.app', 'https://djapones.firebaseapp.com'] 
 var corsOptions = {
@@ -16,6 +17,7 @@ var corsOptions = {
     }
   }
 }
+
 
 // Wrapping the Puppeteer browser logic in a GET request
 app.get('/', cors(corsOptions), function(req, res) {
@@ -36,11 +38,13 @@ app.get('/', cors(corsOptions), function(req, res) {
     return false;
   }
 
+  // conjugator.unconjugate(req.query.word)
+
   (async () => {
     res.status(200).send(await fetchJisho(req.query.word, req.query.src).catch(e => {
         console.log(`Error found: ${e}`);
         return {error: `Error de busqueda en el servidor, por favor contacte con los administradores: ${e}, HTTP 500.`, code: 500};
-      }));
+    }));
   })();
 
 });
@@ -79,8 +83,9 @@ const fetchJisho = async (keyword, src) => {
     };
 
    if(res.data){
+        const conjugation = await utils.isConjugation(keyword, src);
         for (let result = 0; result < res.data.length; result++) {
-            query.data.push(await formatResult(res.data[result])); 
+            query.data.push(await formatResult(res.data[result], conjugation)); 
         }
     }else{
         query = res;
@@ -89,7 +94,7 @@ const fetchJisho = async (keyword, src) => {
    return query;
 }
 
-const formatResult = async (result) => {
+const formatResult = async (result, conjugation) => {
     let formattedResult = {
         japanese: [
             // {
@@ -112,7 +117,8 @@ const formatResult = async (result) => {
         spanishDefs: [
             // idem as in englishDefs
         ],
-        isCommon: result.is_common
+        isCommon: result.is_common,
+        possibleConjugation: conjugation
     };
 
     // get japanese data
@@ -125,6 +131,8 @@ const formatResult = async (result) => {
         formattedResult.englishDefs.push(await getDefinitions(result.senses[sense]));
     }
 
+    
+
     return formattedResult;
 }
 
@@ -132,7 +140,7 @@ const getJapanese = async (word) => {
     let tempWord = {
         word: word.word,
         reading: word.reading,
-        romaji: wanakana.toRomaji(word.reading)
+        romaji: utils.wanakana.toRomaji(word.reading)
     }
 
     return tempWord;
@@ -183,17 +191,6 @@ const getDefinitionData = async (array, separator, isRelated) => {
     }
 
     return dataToReturn;
-}
-
-const isKanji = (ch) => {
-    return (ch >= "\u4e00" && ch <= "\u9faf") || (ch >= "\u3400" && ch <= "\u4dbf");
-}
-
-const removeDuplicates = async (str) => {
-    let uniqueList = str.split('; ').filter(function(allItems,i,a){
-      return i == a.indexOf(allItems);
-    }).join('; ');
-    return uniqueList;
 }
 
 // Making Express listen on port 7000
