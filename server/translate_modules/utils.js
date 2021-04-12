@@ -21,7 +21,7 @@ const isConjugation = async (keyword, src) => {
         response = false;
     }
 
-    console.log(response);
+    // console.log(response);
 
     return response;
 

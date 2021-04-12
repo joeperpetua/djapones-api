@@ -5,6 +5,7 @@ const cors = require('cors')
 const express = require('express'); // Adding Express
 const app = express(); // Initializing Express
 const fetch = require('node-fetch');
+const fs = require('fs');
 
 
 var whitelist = ['http://localhost:3000', 'https://djapones.web.app', 'https://djapones.firebaseapp.com'] 
@@ -42,7 +43,7 @@ app.get('/', cors(corsOptions), function(req, res) {
 
   (async () => {
     res.status(200).send(await fetchJisho(req.query.word, req.query.src).catch(e => {
-        console.log(`Error found: ${e}`);
+        console.log(`Error found: ${e}\n${e.stack}`);
         return {error: `Error de busqueda en el servidor, por favor contacte con los administradores: ${e}, HTTP 500.`, code: 500};
     }));
   })();
@@ -98,7 +99,7 @@ const formatResult = async (result, conjugation) => {
     let formattedResult = {
         japanese: [
             // {
-            // word: '',
+            // word: '', // if word does not contain kanji, this
             // reading: '',
             // romaji: ''
             // }
@@ -126,19 +127,17 @@ const formatResult = async (result, conjugation) => {
         formattedResult.japanese.push(await getJapanese(result.japanese[word]));
     }
 
-    // get english defs
+    // get english defs 
     for (let sense = 0; sense < result.senses.length; sense++) {
         formattedResult.englishDefs.push(await getDefinitions(result.senses[sense]));
     }
-
-    
 
     return formattedResult;
 }
 
 const getJapanese = async (word) => {
     let tempWord = {
-        word: word.word,
+        word: word.word ? word.word : word.reading,
         reading: word.reading,
         romaji: utils.wanakana.toRomaji(word.reading)
     }
@@ -152,20 +151,30 @@ const getDefinitions = async (sense) => {
         type: '',
         tags: '',
         related: '',
+        restrictions: '', // 'only applies to...'
+        antonyms: '',
         info: '',
         text: ''
     };
 
-    tempDefinition.type = await getDefinitionData(sense.parts_of_speech, ',', false);
-    tempDefinition.tags = await getDefinitionData(sense.tags, ',', false);
-    tempDefinition.related = await getDefinitionData(sense.see_also, ',', true);
-    tempDefinition.info = await getDefinitionData(sense.info, ',', false);
-    tempDefinition.text = await getDefinitionData(sense.english_definitions, ';', false);
+
+    
+    // ignore wikipedia definitions
+    if (sense.parts_of_speech[0] != 'Wikipedia definition') {
+        tempDefinition.type = await getDefinitionData(sense.parts_of_speech, ',', 'partOfSpeech');
+        tempDefinition.tags = await getDefinitionData(sense.tags, ',', 'tag');
+        tempDefinition.related = await getDefinitionData(sense.see_also, ',', 'related');
+        tempDefinition.restrictions = await getDefinitionData(sense.restrictions, ',', 'restrictions');
+        tempDefinition.antonyms = await getDefinitionData(sense.antonyms, ',', 'antonyms');
+        tempDefinition.info = await getDefinitionData(sense.info, ',', 'info');
+        tempDefinition.text = await getDefinitionData(sense.english_definitions, ';', 'text');
+    }
+
 
     return tempDefinition;
 }
 
-const getDefinitionData = async (array, separator, isRelated) => {
+const getDefinitionData = async (array, separator, itemType) => {
     let dataToReturn = '';
 
     if (array) {
@@ -173,10 +182,49 @@ const getDefinitionData = async (array, separator, isRelated) => {
             let last = array.length - 1;
             let item = array[i];
 
+            // translate item before formatting
+            // search for pre-translated
+            if (itemType === 'partOfSpeech' || itemType === 'tag' || itemType === 'info') {
+                let found = false;
+
+                preTranslated.terms.forEach(term => {
+                    if (term && item.toLowerCase().includes(term[0].toLowerCase())) {
+                        // console.log(`found tag ----- ${item} -------- ${term[0]}`);
+                        if(term[2]){ // has to concatenate, use replace
+                            var regEx = new RegExp(term[0], "i");
+                            item = item.replace(regEx, term[1]); 
+                        }else if(item === term[0]){ // does not have to concat, assign total value
+                            item = term[1];
+                        }
+
+                        found = true;
+                    }
+                });
+
+                if (!found) {
+                    console.log(`missing tag ----- ${item} -----`);
+                    // register missing tag
+                    fs.appendFileSync('translate_modules/not-found-tags.txt', `${item} [not added];\n`, function (err) {
+                        if (err) return console.log(err);
+                    });
+                    // then translate it
+                    item = await translate.enToEs(item);
+                }
+            }
+
             // add parenthesis for readings of related words
-            if (isRelated && item.includes(' ')) {
+            if (itemType === 'related' && item.includes(' ')) {
                 item = item + ')';
                 item = item.replace(' ', ' (');
+                item = 'Véase también ' + item;
+            }
+
+            if (itemType === 'restrictions') {
+                item = 'Sólo aplica a: ' + item;
+            }
+
+            if (itemType === 'antonyms') {
+                item = 'Antónimo: ' + item;
             }
     
             // check item position to format correctly with separators
