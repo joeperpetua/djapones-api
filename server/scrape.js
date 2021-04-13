@@ -88,6 +88,9 @@ const fetchJisho = async (keyword, src) => {
         for (let result = 0; result < res.data.length; result++) {
             query.data.push(await formatResult(res.data[result], conjugation)); 
         }
+        query.data = await translateBulk(query.data).catch(e => e);
+        //let t = `house; residence; dwelling - family; household - lineage; family name - no; nay -well; er; why - you're welcome; not at all; don't mention it - running away from home; elopement - outing; going out - becoming a Buddhist monk; entering the priesthood - landlord; landlady - house owner; home owner; head of the household - Jesus (Christ) - social standing of a family; lineage; parentage; pedigree - good family - the road home - row of houses - each house; every house; every door - to be possible to say; to be able to say - said; have said - each house; every house; many houses`;
+        //query.data[0].spanishDefs[0].text = await translate.enToEs(t);
     }else{
         query = res;
     }
@@ -104,6 +107,7 @@ const formatResult = async (result, conjugation) => {
             // romaji: ''
             // }
         ],
+
         englishDefs: [
             // {
             // type: '',
@@ -127,9 +131,9 @@ const formatResult = async (result, conjugation) => {
         formattedResult.japanese.push(await getJapanese(result.japanese[word]));
     }
 
-    // get english defs 
+    // get spanish defs 
     for (let sense = 0; sense < result.senses.length; sense++) {
-        formattedResult.englishDefs.push(await getDefinitions(result.senses[sense]));
+        formattedResult.spanishDefs.push(await getDefinitions(result.senses[sense]));
     }
 
     return formattedResult;
@@ -226,6 +230,10 @@ const getDefinitionData = async (array, separator, itemType) => {
             if (itemType === 'antonyms') {
                 item = 'Antónimo: ' + item;
             }
+
+            if (itemType === 'text') {
+                //item = await translate.enToEs(item).catch(e => e);
+            }
     
             // check item position to format correctly with separators
             if(i === last){ 
@@ -239,6 +247,47 @@ const getDefinitionData = async (array, separator, itemType) => {
     }
 
     return dataToReturn;
+}
+
+const translateBulk = async (data) => {
+    let bulkText = '';
+    let translationBulk = '';
+    
+    // form bulk text from all text fields of the results
+    for (let dataObj = 0; dataObj < data.length; dataObj++) {
+        for (let def = 0; def < data[dataObj].spanishDefs.length; def++) {
+            if(data[dataObj].spanishDefs[def].text != ''){
+                bulkText += `${data[dataObj].spanishDefs[def].text} || `;
+            }
+        }
+    }
+
+    // translate bulk text
+    translationBulk = await translate.enToEs(bulkText).catch(e => e);
+
+    //translationBulk = bulkText;
+
+    // separate bulk text into arrays
+    let translatedArray = translationBulk.split(' || ');
+
+    let counter = 0;
+    //reassign translated values
+    for (let dataObj = 0; dataObj < data.length; dataObj++) {
+        for (let def = 0; def < data[dataObj].spanishDefs.length; def++) {
+            if(data[dataObj].spanishDefs[def].text != ''){
+
+                data[dataObj].spanishDefs[def].text = await utils.removeDuplicates(translatedArray[counter]);
+                
+                // remove || from last item if matches
+                if (data[dataObj].spanishDefs[def].text.includes(' ||')) {
+                    data[dataObj].spanishDefs[def].text = data[dataObj].spanishDefs[def].text.replace(' ||', '');
+                }
+                counter++;
+            }
+        }
+    }
+
+    return data;
 }
 
 // Making Express listen on port 7000
