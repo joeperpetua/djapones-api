@@ -194,11 +194,13 @@ const getDefinitionData = async (array, separator, itemType) => {
                 preTranslated.terms.forEach(term => {
                     if (term && item.toLowerCase().includes(term[0].toLowerCase())) {
                         // console.log(`found tag ----- ${item} -------- ${term[0]}`);
-                        if(term[2]){ // has to concatenate, use replace
+                        if(term[1]){ // has to concatenate, use replace
                             var regEx = new RegExp(term[0], "i");
                             item = item.replace(regEx, term[1]); 
+                            // console.log(`Ends up as -> ${item}`);
                         }else if(item === term[0]){ // does not have to concat, assign total value
-                            item = term[1];
+                            item = term[0];
+                            // console.log(`Ends up as -> ${item}`);
                         }
 
                         found = true;
@@ -264,12 +266,13 @@ const translateBulk = async (data) => {
 
     // translate bulk text
     translationBulk = await translate.enToEs(bulkText).catch(e => e);
-
+    console.log(translationBulk)
     //translationBulk = bulkText;
 
     // separate bulk text into arrays
     let translatedArray = translationBulk.split(' || ');
 
+    // console.log(translatedArray, data, translatedArray.length, data.length)
     let counter = 0;
     //reassign translated values
     for (let dataObj = 0; dataObj < data.length; dataObj++) {
@@ -277,7 +280,7 @@ const translateBulk = async (data) => {
             if(data[dataObj].spanishDefs[def].text != ''){
 
                 data[dataObj].spanishDefs[def].text = await utils.removeDuplicates(translatedArray[counter]);
-                
+        
                 // remove || from last item if matches
                 if (data[dataObj].spanishDefs[def].text.includes(' ||')) {
                     data[dataObj].spanishDefs[def].text = data[dataObj].spanishDefs[def].text.replace(' ||', '');

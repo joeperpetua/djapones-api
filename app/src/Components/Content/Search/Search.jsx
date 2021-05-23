@@ -19,7 +19,7 @@ class Search extends React.Component{
           .then(res => res.json())
           .then(
             (response) => {
-                if(response.code != 200){
+                if(response.status !== 200){
                     this.setState({
                         isLoaded: true,
                         error: response.error
@@ -27,7 +27,7 @@ class Search extends React.Component{
                 }else{
                     this.setState({
                         isLoaded: true,
-                        results: response.data[1]
+                        results: response.data
                     });
                 }
             },
@@ -52,11 +52,12 @@ class Search extends React.Component{
                 </div>
             );
         } else {
+            //console.log(results)
             return (
                 <div>
                     <SearchBar tooltip='hidden' query={this.state.request[1]} lang={this.state.request[0]} />
-                    {results.map(result => (
-                        <ResultCard key={result.kana} data={result} />
+                    {results.map((result, index) => (
+                        <ResultCard key={index} data={result} />
                     ))}
                 </div>
             );

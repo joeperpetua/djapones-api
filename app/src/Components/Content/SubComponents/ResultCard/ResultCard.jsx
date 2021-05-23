@@ -37,25 +37,28 @@ const CustomKana = (kana, reading) => (
 const Definition = (definition) => (
     <div>
         <p className="definition-type">{definition.type}</p>
-        <p className="definition-text">{definition.meaning}</p>
+        <p className="definition-text">{definition.text}</p>
     </div>
 );
 
 class ResultCard extends React.Component{
-    constructor(props){
-        super(props);
-    }
+    // constructor(props){
+    //     super(props);
+    // }
 
     render(){
-        const { kana, reading, spanishDefs} = this.props.data;
+        console.log(this.props.data)
+        const data = this.props.data;
+        //const { kana, reading, spanishDefs} = this.props.data;
         return(
             <div className="ResultCard">
                 <div className="kana-container">
-                    {CustomKana(kana, reading)}
-                    {Definition(spanishDefs[0])}
+                    {CustomKana(data.japanese[0].word, data.japanese[0].reading)}
+                    {Definition(data.spanishDefs[0])}
                 </div>
+                
                 <div className="definition-container">
-                    {spanishDefs.map((definition, index) => (
+                    {data.spanishDefs.map((definition, index) => (
                         <div key={index}>
                             {index === 0 ? null : Definition(definition)}
                         </div>
