@@ -266,7 +266,7 @@ const translateBulk = async (data) => {
 
     // translate bulk text
     translationBulk = await translate.enToEs(bulkText).catch(e => e);
-    console.log(translationBulk)
+    console.log(translationBulk, bulkText)
     //translationBulk = bulkText;
 
     // separate bulk text into arrays
