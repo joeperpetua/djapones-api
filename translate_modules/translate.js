@@ -1,8 +1,8 @@
 const {TranslationServiceClient} = require('@google-cloud/translate');
 const projectId = 'djapones';
 const location = 'global';
-const path = require('./api-path');
-const keyFilename = path.path;
+// const path = require('./api-path');
+const keyFilename = './translate_modules/DJaponES-90604793006c.json';
 
 // Instantiates a client
 const translationClient = new TranslationServiceClient({projectId, keyFilename});

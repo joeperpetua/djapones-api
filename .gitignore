@@ -3,6 +3,7 @@
 # dependencies
 node_modules/
 api-info/
+/translate_modules/DJaponES-90604793006c.json
 **/translate_modules/api-path.js
 **/jmdict-eng-3.1.0.json
 **/.pnp
