@@ -192,18 +192,26 @@ const getDefinitionData = async (array, separator, itemType) => {
                 let found = false;
 
                 preTranslated.terms.forEach(term => {
-                    if (term && item.toLowerCase().includes(term[0].toLowerCase())) {
-                        // console.log(`found tag ----- ${item} -------- ${term[0]}`);
-                        if(term[1]){ // has to concatenate, use replace
+
+                    if(term[2]){ // has to concat
+                        if (term && item.toLowerCase().includes(term[0].toLowerCase())) {
+                            console.log(`found tag for concat ----- ${item} -------- ${term[0]}}`);
                             var regEx = new RegExp(term[0], "i");
                             item = item.replace(regEx, term[1]); 
-                            // console.log(`Ends up as -> ${item}`);
-                        }else if(item === term[0]){ // does not have to concat, assign total value
-                            item = term[0];
-                            // console.log(`Ends up as -> ${item}`);
+                            console.log(`Ends up as -> ${item}`);
+                            found = true;
+                        }else{
+                            console.log('wtf does not match -- concat', item);
                         }
-
-                        found = true;
+                    }else{ //does not have to concat -- replace all
+                        if (term && item.toLowerCase() === term[0].toLowerCase()) {
+                            console.log(`found tag to repalce all ----- ${item} -------- ${term[0]}}`);
+                            item = term[1];
+                            console.log(`Ends up as -> ${item}`);
+                            found = true;
+                        }else{
+                            console.log('wtf does not match -- replace', item);
+                        }
                     }
                 });
 

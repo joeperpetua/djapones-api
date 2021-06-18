@@ -123,6 +123,22 @@ const terms = [
     ['in the construction industry', 'en la industria de la contrucción', true],
     ['of person older than speaker', 'De persona mayor que el hablante', false],
     ['Computer terminology', 'Término computacional', false],
+    ["used both to apologize and to get someone's attention", 'utilizado tanto para disculparse como para llamar la atención de alguien', false],
+    ['often as 〜', 'usualmente como 〜', true],
+    ["Children's language", 'Lenguaje infantil', false],
+    ['commonly used until the end of the Meiji period', 'comúnmente utilizado hasta el final del período Meiji', false],
+    ['used to address a male patron, customer, or person of high status', 'se utiliza para dirigirse a un patrón masculino, cliente o persona de alto estatus', false],
+    ['Product', 'Producto', false],
+    ['slightly formal or feminine', 'ligeramente formal o femenino', false],
+    ['used by elderly', 'utilizado por personas mayores', false],
+    ['used toward people of equal or lower status', 'utilizado hacia personas de igual o menor estatus', false],
+    ['mainly used by working men', 'principalmente utilizado por trabajadores', false],
+    ['Humble (kenjougo)', 'Término humilde (kenjougo)', false],
+    ['spoken to avoid confusion with', 'hablado para evitar la confusión con', true],
+    ['とと and ちゃん are used by children', 'とと y ちゃん son utilizados por los niños', false],
+    ['Medicine, etc. term', 'Término medicinal', false],
+    ['of soil', 'del suelo', false],
+    
 ];
 
 exports.terms = terms;
