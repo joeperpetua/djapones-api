@@ -89,8 +89,7 @@ const fetchJisho = async (keyword, src) => {
             query.data.push(await formatResult(res.data[result], conjugation)); 
         }
         query.data = await translateBulk(query.data).catch(e => e);
-        //let t = `house; residence; dwelling - family; household - lineage; family name - no; nay -well; er; why - you're welcome; not at all; don't mention it - running away from home; elopement - outing; going out - becoming a Buddhist monk; entering the priesthood - landlord; landlady - house owner; home owner; head of the household - Jesus (Christ) - social standing of a family; lineage; parentage; pedigree - good family - the road home - row of houses - each house; every house; every door - to be possible to say; to be able to say - said; have said - each house; every house; many houses`;
-        //query.data[0].spanishDefs[0].text = await translate.enToEs(t);
+        console.log(query.data)
     }else{
         query = res;
     }
@@ -122,7 +121,7 @@ const formatResult = async (result, conjugation) => {
         spanishDefs: [
             // idem as in englishDefs
         ],
-        isCommon: result.is_common,
+        isCommon: result.is_common ? true : false,
         possibleConjugation: conjugation
     };
 
@@ -193,32 +192,29 @@ const getDefinitionData = async (array, separator, itemType) => {
 
                 preTranslated.terms.forEach(term => {
 
-                    if(term[2]){ // has to concat
+                    if(term[2]){ // has to concat -- if not match then word is not in the list
                         if (term && item.toLowerCase().includes(term[0].toLowerCase())) {
                             console.log(`found tag for concat ----- ${item} -------- ${term[0]}}`);
                             var regEx = new RegExp(term[0], "i");
                             item = item.replace(regEx, term[1]); 
                             console.log(`Ends up as -> ${item}`);
                             found = true;
-                        }else{
-                            console.log('wtf does not match -- concat', item);
                         }
-                    }else{ //does not have to concat -- replace all
+                    }else{ //does not have to concat -- replace all -- if not match then word is not in the list
                         if (term && item.toLowerCase() === term[0].toLowerCase()) {
                             console.log(`found tag to repalce all ----- ${item} -------- ${term[0]}}`);
                             item = term[1];
                             console.log(`Ends up as -> ${item}`);
                             found = true;
-                        }else{
-                            console.log('wtf does not match -- replace', item);
                         }
                     }
                 });
 
                 if (!found) {
                     console.log(`missing tag ----- ${item} -----`);
+                    let timestamp = new Date();
                     // register missing tag
-                    fs.appendFileSync('translate_modules/not-found-tags.txt', `${item} [not added];\n`, function (err) {
+                    fs.appendFileSync('translate_modules/not-found-tags.txt', `${item} [${timestamp}][not added];\n`, function (err) {
                         if (err) return console.log(err);
                     });
                     // then translate it
@@ -274,8 +270,8 @@ const translateBulk = async (data) => {
 
     // translate bulk text
     translationBulk = await translate.enToEs(bulkText).catch(e => e);
-    console.log(translationBulk, bulkText)
-    //translationBulk = bulkText;
+    // console.log(translationBulk, bulkText)
+    // translationBulk = bulkText;
 
     // separate bulk text into arrays
     let translatedArray = translationBulk.split(' || ');
@@ -287,12 +283,16 @@ const translateBulk = async (data) => {
         for (let def = 0; def < data[dataObj].spanishDefs.length; def++) {
             if(data[dataObj].spanishDefs[def].text != ''){
 
-                data[dataObj].spanishDefs[def].text = await utils.removeDuplicates(translatedArray[counter]);
+                if(translatedArray[counter]){
+                    data[dataObj].spanishDefs[def].text = await utils.removeDuplicates(translatedArray[counter]);
+                }
+
         
                 // remove || from last item if matches
                 if (data[dataObj].spanishDefs[def].text.includes(' ||')) {
                     data[dataObj].spanishDefs[def].text = data[dataObj].spanishDefs[def].text.replace(' ||', '');
                 }
+                
                 counter++;
             }
         }

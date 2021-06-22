@@ -138,7 +138,13 @@ const terms = [
     ['とと and ちゃん are used by children', 'とと y ちゃん son utilizados por los niños', false],
     ['Medicine, etc. term', 'Término medicinal', false],
     ['of soil', 'del suelo', false],
-    
+    ['after te-form of a verb or a noun prefixed with o- or go-', 'después de la forma -te de un verbo o de un sustantivo con prefijo o- ó go-', false],
+    ['as 〜の字', 'como 〜の字', false],
+    ['Auxiliary', 'Auxiliar', false],
+    ['used by children to their parents, etc.', 'utilizados por los niños a sus padres, etc.', false],
+    ['Male term or language', 'Término masculino', false],
+
+
 ];
 
 exports.terms = terms;
