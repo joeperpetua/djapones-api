@@ -143,7 +143,9 @@ const terms = [
     ['Auxiliary', 'Auxiliar', false],
     ['used by children to their parents, etc.', 'utilizados por los niños a sus padres, etc.', false],
     ['Male term or language', 'Término masculino', false],
-
+    ['after the -masu stem of a humble verb to increase the level of humility', 'tras la raíz -masu de un verbo formal para aumentar el nivel de formalidad', false],
+    ['after the -masu stem of a verb', 'tras la raíz -masu de un verbo', false],
+    ['after the -te form of a verb', 'tras la forma -te de un verbo', false],
 
 ];
 

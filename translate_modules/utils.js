@@ -45,11 +45,27 @@ const isKana = (ch) => {
     return (ch >= "\u3040" && ch <= "\u309f") || (ch >= "\u30a0" && ch <= "\u30ff");
 }
 
-const removeDuplicates = async (str) => {
-    let uniqueList = str.split('; ').filter(function(allItems,i,a){
-      return i == a.indexOf(allItems);
-    }).join('; ');
-    return uniqueList;
+const removeDuplicates = async (data) => {
+    let revisedData;
+    if(Array.isArray(data)){
+        //console.log('is array');
+        revisedData = [];
+        data.forEach(element => {
+            let uniqueList = element.split('; ').filter(function(allItems,i,a){
+                //console.log('-----------------', allItems)
+              return i == a.indexOf(allItems);
+            }).join('; ');
+            revisedData.push(uniqueList);
+        });
+    }else{
+        //console.log('not array')
+        revisedData = data.split('; ').filter(function(allItems,i,a){
+            //console.log('-----------------', allItems)
+        return i == a.indexOf(allItems);
+        }).join('; ');
+    }
+    
+    return revisedData;
 }
 
 exports.isConjugation = isConjugation;

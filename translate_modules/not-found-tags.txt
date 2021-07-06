@@ -33,3 +33,6 @@ Male term or language [added];
 Male term or language [added];
 after te-form of a verb or a noun prefixed with o- or go- [added];
 after te-form of a verb or a noun prefixed with o- or go- [added];
+after the -te form of a verb [Tue Jul 06 2021 17:42:19 GMT-0300 (Argentina Standard Time)][added];
+after the -masu stem of a verb [Tue Jul 06 2021 17:42:20 GMT-0300 (Argentina Standard Time)][added];
+after the -masu stem of a humble verb to increase the level of humility [Tue Jul 06 2021 17:42:21 GMT-0300 (Argentina Standard Time)][added];

@@ -89,7 +89,7 @@ const fetchJisho = async (keyword, src) => {
             query.data.push(await formatResult(res.data[result], conjugation)); 
         }
         query.data = await translateBulk(query.data).catch(e => e);
-        console.log(query.data)
+        //console.log(query.data)
     }else{
         query = res;
     }
@@ -132,7 +132,11 @@ const formatResult = async (result, conjugation) => {
 
     // get spanish defs 
     for (let sense = 0; sense < result.senses.length; sense++) {
-        formattedResult.spanishDefs.push(await getDefinitions(result.senses[sense]));
+            
+        // ignore wikipedia definitions
+        if (result.senses[sense].parts_of_speech[0] != 'Wikipedia definition') {
+            formattedResult.spanishDefs.push(await getDefinitions(result.senses[sense]));
+        }
     }
 
     return formattedResult;
@@ -161,17 +165,16 @@ const getDefinitions = async (sense) => {
     };
 
 
-    
-    // ignore wikipedia definitions
-    if (sense.parts_of_speech[0] != 'Wikipedia definition') {
-        tempDefinition.type = await getDefinitionData(sense.parts_of_speech, ',', 'partOfSpeech');
-        tempDefinition.tags = await getDefinitionData(sense.tags, ',', 'tag');
-        tempDefinition.related = await getDefinitionData(sense.see_also, ',', 'related');
-        tempDefinition.restrictions = await getDefinitionData(sense.restrictions, ',', 'restrictions');
-        tempDefinition.antonyms = await getDefinitionData(sense.antonyms, ',', 'antonyms');
-        tempDefinition.info = await getDefinitionData(sense.info, ',', 'info');
-        tempDefinition.text = await getDefinitionData(sense.english_definitions, ';', 'text');
-    }
+
+
+    tempDefinition.type = await getDefinitionData(sense.parts_of_speech, ',', 'partOfSpeech');
+    tempDefinition.tags = await getDefinitionData(sense.tags, ',', 'tag');
+    tempDefinition.related = await getDefinitionData(sense.see_also, ',', 'related');
+    tempDefinition.restrictions = await getDefinitionData(sense.restrictions, ',', 'restrictions');
+    tempDefinition.antonyms = await getDefinitionData(sense.antonyms, ',', 'antonyms');
+    tempDefinition.info = await getDefinitionData(sense.info, ',', 'info');
+    tempDefinition.text = await getDefinitionData(sense.english_definitions, ';', 'text');
+
 
 
     return tempDefinition;
@@ -202,7 +205,7 @@ const getDefinitionData = async (array, separator, itemType) => {
                         }
                     }else{ //does not have to concat -- replace all -- if not match then word is not in the list
                         if (term && item.toLowerCase() === term[0].toLowerCase()) {
-                            console.log(`found tag to repalce all ----- ${item} -------- ${term[0]}}`);
+                            console.log(`found tag to replace all ----- ${item} -------- ${term[0]}}`);
                             item = term[1];
                             console.log(`Ends up as -> ${item}`);
                             found = true;
@@ -218,7 +221,9 @@ const getDefinitionData = async (array, separator, itemType) => {
                         if (err) return console.log(err);
                     });
                     // then translate it
-                    item = await translate.enToEs(item);
+                    item = await translate.enToEs(item).catch(e => console.log(e));
+                    item = item.translations[0].translatedText;
+                    console.log(item)
                 }
             }
 
@@ -235,10 +240,6 @@ const getDefinitionData = async (array, separator, itemType) => {
 
             if (itemType === 'antonyms') {
                 item = 'Antónimo: ' + item;
-            }
-
-            if (itemType === 'text') {
-                //item = await translate.enToEs(item).catch(e => e);
             }
     
             // check item position to format correctly with separators
@@ -258,45 +259,90 @@ const getDefinitionData = async (array, separator, itemType) => {
 const translateBulk = async (data) => {
     let bulkText = '';
     let translationBulk = '';
+
+    let untranslatedDataArray = [];
     
-    // form bulk text from all text fields of the results
+
     for (let dataObj = 0; dataObj < data.length; dataObj++) {
         for (let def = 0; def < data[dataObj].spanishDefs.length; def++) {
             if(data[dataObj].spanishDefs[def].text != ''){
-                bulkText += `${data[dataObj].spanishDefs[def].text} || `;
+                untranslatedDataArray.push(data[dataObj].spanishDefs[def].text);
+                untranslatedDataArray.push('*');
             }
         }
     }
+    
+    // translate array -- returns string
+    let translatedData = await translate.enToEs(untranslatedDataArray).catch(e => console.log(e));
 
-    // translate bulk text
-    translationBulk = await translate.enToEs(bulkText).catch(e => e);
-    // console.log(translationBulk, bulkText)
-    // translationBulk = bulkText;
+    // string to grouped array by definitions
+    translatedData.translations[0].translatedText = translatedData.translations[0].translatedText.replace(', * ,', ', *,');
+    let translatedDataArray = translatedData.translations[0].translatedText.split(', *, ');
+    // last index finishes with ', *' so replace it
+    translatedDataArray[translatedDataArray.length - 1] = translatedDataArray[translatedDataArray.length - 1].replace(', *', ''); 
 
-    // separate bulk text into arrays
-    let translatedArray = translationBulk.split(' || ');
+    //remove dups
+    translatedDataArray = await utils.removeDuplicates(translatedDataArray);
 
-    // console.log(translatedArray, data, translatedArray.length, data.length)
-    let counter = 0;
+    translatedDataArray.forEach(element => {
+        console.log(element)
+    });
+
+    console.log(data.length, translatedDataArray.length);
+
     //reassign translated values
+    let counter = 0;
     for (let dataObj = 0; dataObj < data.length; dataObj++) {
         for (let def = 0; def < data[dataObj].spanishDefs.length; def++) {
             if(data[dataObj].spanishDefs[def].text != ''){
-
-                if(translatedArray[counter]){
-                    data[dataObj].spanishDefs[def].text = await utils.removeDuplicates(translatedArray[counter]);
-                }
-
-        
-                // remove || from last item if matches
-                if (data[dataObj].spanishDefs[def].text.includes(' ||')) {
-                    data[dataObj].spanishDefs[def].text = data[dataObj].spanishDefs[def].text.replace(' ||', '');
-                }
-                
+                data[dataObj].spanishDefs[def].text = translatedDataArray[counter];
+                console.log(data[dataObj].spanishDefs[def].text);
                 counter++;
             }
         }
     }
+
+
+
+    return data;
+    // // form bulk text from all text fields of the results
+    // for (let dataObj = 0; dataObj < data.length; dataObj++) {
+    //     for (let def = 0; def < data[dataObj].spanishDefs.length; def++) {
+    //         if(data[dataObj].spanishDefs[def].text != ''){
+    //             bulkText += `${data[dataObj].spanishDefs[def].text} || `;
+    //         }
+    //     }
+    // }
+
+    // // translate bulk text
+    // translationBulk = await translate.enToEs(bulkText).catch(e => e);
+    // // console.log(translationBulk, bulkText)
+    // // translationBulk = bulkText;
+
+    // // separate bulk text into arrays
+    // let translatedArray = translationBulk.split(' || ');
+
+    // // console.log(translatedArray, data, translatedArray.length, data.length)
+    // let counter = 0;
+    // //reassign translated values
+    // for (let dataObj = 0; dataObj < data.length; dataObj++) {
+    //     for (let def = 0; def < data[dataObj].spanishDefs.length; def++) {
+    //         if(data[dataObj].spanishDefs[def].text != ''){
+
+    //             if(translatedArray[counter]){
+    //                 data[dataObj].spanishDefs[def].text = await utils.removeDuplicates(translatedArray[counter]);
+    //             }
+
+        
+    //             // remove || from last item if matches
+    //             if (data[dataObj].spanishDefs[def].text.includes(' ||')) {
+    //                 data[dataObj].spanishDefs[def].text = data[dataObj].spanishDefs[def].text.replace(' ||', '');
+    //             }
+                
+    //             counter++;
+    //         }
+    //     }
+    // }
 
     return data;
 }
