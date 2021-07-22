@@ -20,81 +20,73 @@ var corsOptions = {
 }
 
 
-// Wrapping the Puppeteer browser logic in a GET request
-app.get('/', cors(corsOptions), function(req, res) {
-  const start = Date.now();
-  let time;
-  let response = {
-    code: '',
-    data: []
-  };
+app.get('/', cors(corsOptions), async (req, res) => {
 
-  if (req.query.src == undefined || req.query.src == null || req.query.src == '') {
-    res.status(400).send({error: 'Idioma de origen no especificado, petición incorrecta.', code: 400});
-    return false;
-  }
+    if (req.query.word == undefined || req.query.word == null || req.query.word == '') {
+        res.status(400).send({error: 'Término no especificado, petición incorrecta.', status: 400});
+        return false;
+    }
 
-  if (req.query.word == undefined || req.query.word == null || req.query.word == '') {
-    res.status(400).send({error: 'Termino no especificado, petición incorrecta.', code: 400});
-    return false;
-  }
+    const response = await fetchJisho(req.query.word).catch(e => {
+        res.status(500).send({error: `Error de busqueda en el servidor, por favor contacte con los administradores: ${e}, HTTP 500.`, status: 500});
+        return false
+    });
 
-  // conjugator.unconjugate(req.query.word)
+    let query = {
+        status: response.meta.status,
+        data: []
+    };
 
-  (async () => {
-    res.status(200).send(await fetchJisho(req.query.word, req.query.src).catch(e => {
-        console.log(`Error found: ${e}\n${e.stack}`);
-        return {error: `Error de busqueda en el servidor, por favor contacte con los administradores: ${e}, HTTP 500.`, code: 500};
-    }));
-  })();
+   if(response.data){
+        const conjugation = await utils.isConjugation(req.query.word);
+
+        for (let result = 0; result < response.data.length; result++) {
+            query.data.push(await formatResult(response.data[result], conjugation)); 
+        }
+
+        query.data = await translateBulk(query.data).catch(e => e);
+    }else{
+        query = response;
+    }
+    
+    
+    
+    
+    res.status(200).send(query);
 
 });
 
-const fetchJisho = async (keyword, src) => {
-    let url = '';
+const fetchJisho = async (keyword) => {
 
-    // check src lang
-    switch (src) {
-    case 'jp':
-        let lowerCaseJP = keyword.toLocaleLowerCase();
-        console.log(lowerCaseJP);
-        url = `https://jisho.org/api/v1/search/words?keyword=${lowerCaseJP}`;
-        break;
-    
-    case 'es':
-        let tempTrans = await translate.esToEn(keyword);
-        let lowerCaseES = tempTrans.toLocaleLowerCase();
-        console.log(lowerCaseES);
-        url = `https://jisho.org/api/v1/search/words?keyword=${lowerCaseES}`;
-        break;
-
-    default:
-        console.log(`Unsupported lang, ${src}`);
-        return {error: `Idioma de origen no soportado: ${src}. Los idiomas soportados son español (es) y japonés (jp). Petición incorrecta.`, code: 400};
+    let lowerCaseKeyword = keyword.toLocaleLowerCase();
+    let translatedKeyword = await translate.esToEn(lowerCaseKeyword).then(el => {
+        return el.translations[0].translatedText;
+    }).catch(e => {
+        throw new Error(`Error en el manejo de la búsqueda para: ${keyword} - ${e}`);
+    });
+    // make lowercase
+    translatedKeyword = translatedKeyword.toLocaleLowerCase();
+    // if has japanese, then remove spaces
+    if (utils.checkForJapaneseInString(keyword, utils.isKanji) || utils.checkForJapaneseInString(keyword, utils.isKana)) {
+        translatedKeyword = translatedKeyword.replace(/ /g, '');
     }
+    console.log(translatedKeyword)
+
+    let url = `https://jisho.org/api/v1/search/words?keyword=${translatedKeyword}`;
 
     // fetch jisho
    const res = await fetch(encodeURI(url))
    .then(response => response.json())
-   .then(res => res.data.length != 0 ? res : {error: `No se ha encontrado ningún resultado para la busqueda de:  ${keyword}`});
-  
-   let query = {
-        status: res.meta.status,
-        data: []
-    };
-
-   if(res.data){
-        const conjugation = await utils.isConjugation(keyword, src);
-        for (let result = 0; result < res.data.length; result++) {
-            query.data.push(await formatResult(res.data[result], conjugation)); 
+   .then(res => { 
+        if(res.data.length != 0){
+            return res;
+        }else{
+            throw new Error(`No se ha encontrado ningún resultado para la busqueda de:  ${keyword}`);
         }
-        query.data = await translateBulk(query.data).catch(e => e);
-        //console.log(query.data)
-    }else{
-        query = res;
-    }
+   });
 
-   return query;
+   console.log(res)
+   return res;
 }
 
 const formatResult = async (result, conjugation) => {
@@ -197,17 +189,17 @@ const getDefinitionData = async (array, separator, itemType) => {
 
                     if(term[2]){ // has to concat -- if not match then word is not in the list
                         if (term && item.toLowerCase().includes(term[0].toLowerCase())) {
-                            console.log(`found tag for concat ----- ${item} -------- ${term[0]}}`);
+                            // console.log(`found tag for concat ----- ${item} -------- ${term[0]}}`);
                             var regEx = new RegExp(term[0], "i");
                             item = item.replace(regEx, term[1]); 
-                            console.log(`Ends up as -> ${item}`);
+                            // console.log(`Ends up as -> ${item}`);
                             found = true;
                         }
                     }else{ //does not have to concat -- replace all -- if not match then word is not in the list
                         if (term && item.toLowerCase() === term[0].toLowerCase()) {
-                            console.log(`found tag to replace all ----- ${item} -------- ${term[0]}}`);
+                            // console.log(`found tag to replace all ----- ${item} -------- ${term[0]}}`);
                             item = term[1];
-                            console.log(`Ends up as -> ${item}`);
+                            // console.log(`Ends up as -> ${item}`);
                             found = true;
                         }
                     }
@@ -258,8 +250,6 @@ const getDefinitionData = async (array, separator, itemType) => {
 }
 
 const translateBulk = async (data) => {
-    let bulkText = '';
-    let translationBulk = '';
 
     let untranslatedDataArray = [];
     

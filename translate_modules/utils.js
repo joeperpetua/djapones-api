@@ -1,9 +1,9 @@
 const conjugator = require('./conjugator');
 const wanakana = require('wanakana');
 
-const isConjugation = async (keyword, src) => {
+const isConjugation = async (keyword) => {
     // convert to hiragana if it is romaji
-    if (!checkForJapaneseInString(keyword, isKanji) && !checkForJapaneseInString(keyword, isKana) && src === 'jp') {
+    if (!checkForJapaneseInString(keyword, isKanji) && !checkForJapaneseInString(keyword, isKana)) {
         keyword = wanakana.toHiragana(keyword);
     }
 
@@ -69,6 +69,7 @@ const removeDuplicates = async (data) => {
 }
 
 exports.isConjugation = isConjugation;
+exports.checkForJapaneseInString = checkForJapaneseInString;
 exports.isKanji = isKanji;
 exports.isKana = isKana;
 exports.removeDuplicates = removeDuplicates;

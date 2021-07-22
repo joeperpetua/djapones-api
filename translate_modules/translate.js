@@ -26,10 +26,10 @@ const esToEn = async (text) => {
     //   console.log(`Translation: ${translation.translatedText}`);
     // }
 
-    return response.translations[0].translatedText;
+    return response;
 
   } catch (error) {
-    return `error: ${error}`;
+    return `error 500: ${error}`;
   }
 }
 
