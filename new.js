@@ -7,6 +7,8 @@ const app = express(); // Initializing Express
 const fetch = require('node-fetch');
 const fs = require('fs');
 
+// console.log(utils.searchForEnglish('good morning'));
+// console.log(utils.searchForSpanish('buenos dias'));
 
 var whitelist = ['http://localhost:3000', 'https://djapones.web.app', 'https://djapones.firebaseapp.com'] 
 var corsOptions = {
@@ -19,7 +21,6 @@ var corsOptions = {
   }
 }
 
-
 app.get('/', cors(corsOptions), async (req, res) => {
 
     if (req.query.word == undefined || req.query.word == null || req.query.word == '') {
@@ -27,17 +28,27 @@ app.get('/', cors(corsOptions), async (req, res) => {
         return false;
     }
 
-    const response = await fetchJisho(req.query.word).catch(e => {
+    if (req.query.lang == undefined || req.query.lang == null || req.query.lang == '') {
+        res.status(400).send({error: 'Lenguaje no especificado, petición incorrecta.', status: 400});
+        return false;
+    }
+
+
+
+    const response = await fetchJisho(req.query.word, req.query.lang)
+    .catch(e => {
         res.status(500).send({error: `Error de busqueda en el servidor, por favor contacte con los administradores: ${e}, HTTP 500.`, status: 500});
         return false
     });
 
-    let query = {
-        status: response.meta.status,
-        data: []
-    };
+    let query = {};
 
    if(response.data){
+       console.log()
+        query = {
+            status: response.meta.status,
+            data: []
+        };
         const conjugation = await utils.isConjugation(req.query.word);
 
         for (let result = 0; result < response.data.length; result++) {
@@ -56,21 +67,43 @@ app.get('/', cors(corsOptions), async (req, res) => {
 
 });
 
-const fetchJisho = async (keyword) => {
-
+const fetchJisho = async (keyword, lang) => {
     let lowerCaseKeyword = keyword.toLocaleLowerCase();
-    let translatedKeyword = await translate.esToEn(lowerCaseKeyword).then(el => {
-        return el.translations[0].translatedText;
-    }).catch(e => {
-        throw new Error(`Error en el manejo de la búsqueda para: ${keyword} - ${e}`);
-    });
-    // make lowercase
-    translatedKeyword = translatedKeyword.toLocaleLowerCase();
-    // if has japanese, then remove spaces
-    if (utils.checkForJapaneseInString(keyword, utils.isKanji) || utils.checkForJapaneseInString(keyword, utils.isKana)) {
-        translatedKeyword = translatedKeyword.replace(/ /g, '');
+    let translatedKeyword;
+    
+    switch (lang) {
+        case "auto":
+            translatedKeyword = await translate.esToEn(lowerCaseKeyword).then(el => {
+                return el.translations[0].translatedText;
+            }).catch(e => {
+                throw new Error(`Error en el manejo de la búsqueda para: ${keyword} - ${e}`);
+            });
+            // make lowercase
+            translatedKeyword = translatedKeyword.toLocaleLowerCase();
+            // if has japanese, then remove spaces
+            if (utils.checkForJapaneseInString(keyword, utils.isKanji) || utils.checkForJapaneseInString(keyword, utils.isKana)) {
+                translatedKeyword = translatedKeyword.replace(/ /g, '');
+            }
+            console.log('-----', translatedKeyword, lang);
+            break;
+
+        case "jp":
+            translatedKeyword = lowerCaseKeyword;
+            console.log('-----', translatedKeyword, lang);
+            break;
+        
+        case "es":
+            let tempTrans = await translate.esToEn(lowerCaseKeyword).then(el => {
+                return el.translations[0].translatedText;
+            }).catch(e => {
+                throw new Error(`Error en el manejo de la búsqueda para: ${keyword} - ${e}`);
+            });
+            translatedKeyword = '"' + tempTrans.toLocaleLowerCase() + '"';
+            console.log('-----', translatedKeyword, lang);
+            break;
     }
-    console.log(translatedKeyword)
+
+    
 
     let url = `https://jisho.org/api/v1/search/words?keyword=${translatedKeyword}`;
 
@@ -85,7 +118,7 @@ const fetchJisho = async (keyword) => {
         }
    });
 
-   console.log(res)
+   // console.log(res)
    return res;
 }
 
@@ -275,9 +308,9 @@ const translateBulk = async (data) => {
     //remove dups
     translatedDataArray = await utils.removeDuplicates(translatedDataArray);
 
-    translatedDataArray.forEach(element => {
-        console.log(element)
-    });
+    // translatedDataArray.forEach(element => {
+    //     console.log(element)
+    // });
 
     console.log(data.length, translatedDataArray.length);
 

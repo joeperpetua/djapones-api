@@ -1,5 +1,8 @@
 const conjugator = require('./conjugator');
 const wanakana = require('wanakana');
+const wordsES = require('an-array-of-spanish-words');
+const wordsEN = require('an-array-of-english-words')
+
 
 const isConjugation = async (keyword) => {
     // convert to hiragana if it is romaji
@@ -68,9 +71,23 @@ const removeDuplicates = async (data) => {
     return revisedData;
 }
 
+const searchForSpanish = async (keyword) => {
+    keyword = `\\b(${keyword})\\b`
+    let regex = new RegExp(keyword, 'i');
+    return wordsES.filter(d => regex.test(d))
+};
+
+const searchForEnglish = async (keyword) => {
+    keyword = `\\b(${keyword})\\b`
+    let regex = new RegExp(keyword, 'i');
+    return wordsEN.filter(d => regex.test(d))
+};
+
 exports.isConjugation = isConjugation;
 exports.checkForJapaneseInString = checkForJapaneseInString;
 exports.isKanji = isKanji;
 exports.isKana = isKana;
 exports.removeDuplicates = removeDuplicates;
+exports.searchForSpanish = searchForSpanish;
+exports.searchForEnglish = searchForEnglish;
 exports.wanakana = wanakana;
