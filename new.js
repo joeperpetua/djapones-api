@@ -88,7 +88,7 @@ const fetchJisho = async (keyword, lang) => {
             }).catch(e => {
                 throw new Error(`Error en el manejo de la búsqueda para: ${keyword} - ${e}`);
             });
-            translatedKeyword = '"' + tempTrans.toLocaleLowerCase() + '"';
+            translatedKeyword = tempTrans.toLocaleLowerCase();
             console.log('-----', translatedKeyword, lang);
             break;
         default:

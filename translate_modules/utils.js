@@ -77,17 +77,10 @@ const isSpanish = (keyword) => {
     return wordsES.filter(d => regex.test(d)) != '' ? true : false
 };
 
-const isEnglish = (keyword) => {
-    keyword = `\\b(${keyword})\\b`
-    let regex = new RegExp(keyword, 'i');
-    return wordsEN.filter(d => regex.test(d)) != '' ? true : false
-};
-
 exports.isConjugation = isConjugation;
 exports.checkForJapaneseInString = checkForJapaneseInString;
 exports.isKanji = isKanji;
 exports.isKana = isKana;
 exports.removeDuplicates = removeDuplicates;
 exports.isSpanish = isSpanish;
-exports.isEnglish = isEnglish;
 exports.wanakana = wanakana;
