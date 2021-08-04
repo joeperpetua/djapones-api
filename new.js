@@ -1,14 +1,12 @@
 const translate = require('./translate_modules/translate');
 const preTranslated = require('./translate_modules/translated-terms');
+const libs = require('./libs');
 const utils = require('./translate_modules/utils');
 const cors = require('cors')
 const express = require('express'); // Adding Express
 const app = express(); // Initializing Express
 const fetch = require('node-fetch');
 const fs = require('fs');
-
-// console.log(utils.searchForEnglish('good morning'));
-// console.log(utils.searchForSpanish('buenos dias'));
 
 var whitelist = ['http://localhost:3000', 'https://djapones.web.app', 'https://djapones.firebaseapp.com'] 
 var corsOptions = {
@@ -37,7 +35,7 @@ app.get('/', cors(corsOptions), async (req, res) => {
 
     const response = await fetchJisho(req.query.word, req.query.lang)
     .catch(e => {
-        res.status(500).send({error: `Error de busqueda en el servidor, por favor contacte con los administradores: ${e}, HTTP 500.`, status: 500});
+        res.status(500).send({error: `Error de busqueda en el servidor. ${e.message}`, status: 500});
         return false
     });
 
@@ -62,9 +60,11 @@ app.get('/', cors(corsOptions), async (req, res) => {
     
     
     
+    if(!res.writableFinished){
+        console.log(res.writableFinished)
+        res.status(200).send(query);
+    }
     
-    res.status(200).send(query);
-
 });
 
 const fetchJisho = async (keyword, lang) => {
@@ -73,17 +73,7 @@ const fetchJisho = async (keyword, lang) => {
     
     switch (lang) {
         case "auto":
-            translatedKeyword = await translate.esToEn(lowerCaseKeyword).then(el => {
-                return el.translations[0].translatedText;
-            }).catch(e => {
-                throw new Error(`Error en el manejo de la búsqueda para: ${keyword} - ${e}`);
-            });
-            // make lowercase
-            translatedKeyword = translatedKeyword.toLocaleLowerCase();
-            // if has japanese, then remove spaces
-            if (utils.checkForJapaneseInString(keyword, utils.isKanji) || utils.checkForJapaneseInString(keyword, utils.isKana)) {
-                translatedKeyword = translatedKeyword.replace(/ /g, '');
-            }
+            translatedKeyword = await libs.manageLangDetection(lowerCaseKeyword);
             console.log('-----', translatedKeyword, lang);
             break;
 
@@ -100,6 +90,9 @@ const fetchJisho = async (keyword, lang) => {
             });
             translatedKeyword = '"' + tempTrans.toLocaleLowerCase() + '"';
             console.log('-----', translatedKeyword, lang);
+            break;
+        default:
+            throw new Error(`Lenguaje no válido:  ${lang}.`);
             break;
     }
 
@@ -159,7 +152,7 @@ const formatResult = async (result, conjugation) => {
     for (let sense = 0; sense < result.senses.length; sense++) {
             
         // ignore wikipedia definitions
-        if (result.senses[sense].parts_of_speech[0] != 'Wikipedia definition') {
+        if (result.senses[sense].parts_of_speech[0] != 'Wikipedia definition' && result.senses[sense].parts_of_speech[0] != 'links') {
             formattedResult.spanishDefs.push(await getDefinitions(result.senses[sense]));
         }
     }
@@ -299,8 +292,22 @@ const translateBulk = async (data) => {
     // translate array -- returns string
     let translatedData = await translate.enToEs(untranslatedDataArray).catch(e => console.log(e));
 
-    // string to grouped array by definitions
+    // console.log('--------------------------------');
+    // console.log(translatedData.translations[0].translatedText);
+
+    // fix some spacing separators to all be the same --> , *,
     translatedData.translations[0].translatedText = translatedData.translations[0].translatedText.replace(', * ,', ', *,');
+    // [[letter] *,]
+    translatedData.translations[0].translatedText = translatedData.translations[0].translatedText.replace(/(\w {1}\*{1},{1})/g, ', *,');
+    // [. *,]
+    translatedData.translations[0].translatedText = translatedData.translations[0].translatedText.replace(/(\. {1}\*{1},{1})/g, ', *,');
+    // [) *,]
+    translatedData.translations[0].translatedText = translatedData.translations[0].translatedText.replace(/(\) {1}\*{1},{1})/g, ', *,');
+    
+    // console.log('-----------------');
+    // console.log(translatedData.translations[0].translatedText);
+    // console.log('--------------------------------');
+    // string to grouped array by definitions
     let translatedDataArray = translatedData.translations[0].translatedText.split(', *, ');
     // last index finishes with ', *' so replace it
     translatedDataArray[translatedDataArray.length - 1] = translatedDataArray[translatedDataArray.length - 1].replace(', *', ''); 

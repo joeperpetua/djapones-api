@@ -71,16 +71,16 @@ const removeDuplicates = async (data) => {
     return revisedData;
 }
 
-const searchForSpanish = async (keyword) => {
+const isSpanish = (keyword) => {
     keyword = `\\b(${keyword})\\b`
     let regex = new RegExp(keyword, 'i');
-    return wordsES.filter(d => regex.test(d))
+    return wordsES.filter(d => regex.test(d)) != '' ? true : false
 };
 
-const searchForEnglish = async (keyword) => {
+const isEnglish = (keyword) => {
     keyword = `\\b(${keyword})\\b`
     let regex = new RegExp(keyword, 'i');
-    return wordsEN.filter(d => regex.test(d))
+    return wordsEN.filter(d => regex.test(d)) != '' ? true : false
 };
 
 exports.isConjugation = isConjugation;
@@ -88,6 +88,6 @@ exports.checkForJapaneseInString = checkForJapaneseInString;
 exports.isKanji = isKanji;
 exports.isKana = isKana;
 exports.removeDuplicates = removeDuplicates;
-exports.searchForSpanish = searchForSpanish;
-exports.searchForEnglish = searchForEnglish;
+exports.isSpanish = isSpanish;
+exports.isEnglish = isEnglish;
 exports.wanakana = wanakana;
