@@ -1,0 +1,189 @@
+desc,tag
+Término de artes marciales,MA
+Término malsonante o de clasificación X,X
+Abreviatura,abbr
+Adjetivo (keiyoushi),adj-i
+Adjetivo (keiyoushi) - clase よい/いい,adj-ix
+Sustantivos adjetivales o cuasi-adjetivos (keiyodoshi),adj-na
+"Sustantivos que pueden tomar la partícula de caso genitivo ""の""",adj-no
+Pronombre adjetivo (rentaishi),adj-pn
+"Adjetivo ""たる""",adj-t
+Sustantivo o verbo que actúa prenominalmente,adj-f
+Adverbio (fukushi),adv
+"Adverbio que toma la partícula ""と""",adv-to
+Arcaísmo,arch
+Lectura ateji (fonética),ateji
+Auxiliar,aux
+Verbo auxiliar,aux-v
+Adjetivo auxiliar,aux-adj
+Término budista,Buddh
+Término químico,chem
+Lenguaje infantil,chn
+Coloquialismo,col
+Terminología informática,comp
+Conjunción,conj
+Cópula,cop
+Contador,ctr
+Despectivo,derog
+Exclusivamente kanji,eK
+Exclusivamente kana,ek
+"Expresiones (frases, cláusulas, etc.)",exp
+Lenguaje familiar,fam
+Término o lenguaje femenino,fem
+Término alimentario,food
+Término de geometría,geom
+Gikun (significado como lectura) o jukujikun (lectura especial en kanji),gikun
+Lenguaje honorífico o respetuoso (sonkeigo),hon
+Lenguaje humilde (kenjougo),hum
+Palabra que contiene un uso irregular del kanji,iK
+Expresión idiomática,id
+Palabra que contiene un uso irregular del kana,ik
+Interjección (kandoushi),int
+Uso irregular del okurigana,io
+Verbo irregular,iv
+Terminología lingüística,ling
+Jerga de manga,m-sl
+Término o lenguaje masculino,male
+Jerga masculina,male-sl
+Matemáticas,math
+Militar,mil
+Sustantivo (futsuumeishi),n
+Sustantivo adverbial (fukushitekimeishi),n-adv
+"Sustantivo, usado como sufijo",n-suf
+"Sustantivo, utilizado como prefijo",n-pref
+Sustantivo (temporal) (jisoumeishi),n-t
+Numérico,num
+Palabra que contiene un kanji obsoleto,oK
+Término obsoleto,obs
+Término oscuro,obsc
+Uso de kana anticuado u obsoleto,ok
+Forma kana antigua o irregular,oik
+Palabra onomatopéyica o mimética,on-mim
+Pronombre,pn
+Término poético,poet
+Lenguaje cortés (teineigo),pol
+Prefijo,pref
+Proverbio,proverb
+Partícula,prt
+Terminología de la física,physics
+Cita,quote
+Raro,rare
+Sensible,sens
+Jerga,sl
+Sufijo,suf
+Palabra que se suele escribir sólo con kanji,uK
+Palabra que suele escribirse sólo con kana,uk
+Sin clasificar,unc
+Yojijukugo,yoji
+Verbo ichidan,v1
+Verbo ichidan - clase especial kureru,v1-s
+"Verbo nidan con terminación ""う"" (arcaico)",v2a-s
+"Verbo yodan con terminación ""ふ"" (arcaico)",v4h
+"Verbo yodan con terminación ""る"" (arcaico)",v4r
+Verbo godan -ある clase especial,v5aru
+"Verbo godan con terminación ""ぶ""",v5b
+"Verbo godan con terminación ""ぐ""",v5g
+"Verbo godan con terminación ""く""",v5k
+Verbo godan - clase especial いく/ゆく,v5k-s
+"Verbo godan con terminación ""む""",v5m
+"Verbo godan con terminación ""ぬ""",v5n
+"Verbo godan con terminación ""る""",v5r
+"Verbo godan con terminación ""る"" (verbo irregular)",v5r-i
+"Verbo godan con terminación ""す""",v5s
+"Verbo godan con la terminación ""つ""",v5t
+"Verbo godan con terminación ""う""",v5u
+"Verbo godan con terminación ""う"" (clase especial)",v5u-s
+Verbo godan - verbo de clase antigua うる,v5uru
+Verbo ichidan - verbo ずる (forma alternativa de los verbos -じる),vz
+Verbo intransitivo,vi
+Verbo kuru - clase especial,vk
+Verbo ぬ irregular,vn
+"Verbo irregular る, la forma simple termina en -り",vr
+Sustantivo o participio que toma el verbo aux. する,vs
+Verbo す - precursor del moderno する,vs-c
+Verbo する - clase especial,vs-s
+Verbo する - incluido,vs-i
+Dialecto de Kyoto,kyb
+Dialecto de Osaka,osb
+Dialecto de Kansai,ksb
+Dialecto de Kantou,ktb
+Dialecto de Tosa,tsb
+Dialecto de Touhoku,thb
+Dialecto de Tsugaru,tsug
+Dialecto de Kyuushuu,kyu
+Dialecto de Ryuukyuu,rkb
+Dialecto de Nagano,nab
+Dialecto de Hokkaido,hob
+Verbo transitivo,vt
+Expresión o palabra vulgar,vulg
+"Adjetivo ""かり"" (arcaico)",adj-kari
+"Adjetivo ""く"" (arcaico)",adj-ku
+"Adjetivo ""しく"" (arcaico)",adj-shiku
+Forma arcaica/formal del adjetivo な,adj-nari
+Nombre propio,n-pr
+Verbo sin especificar,v-unspec
+"Verbo yodan con terminación ""く"" (arcaico)",v4k
+"Verbo yodan con terminación ""ぐ"" (arcaico)",v4g
+"Verbo yodan con terminación ""す"" (arcaico)",v4s
+"Verbo yodan con la terminación ""つ"" (arcaico)",v4t
+"Verbo yodan con la terminación ""ぬ"" (arcaico)",v4n
+"Verbo yodan con la terminación ""ぶ"" (arcaico)",v4b
+"Verbo yodan con terminación ""む"" (arcaico)",v4m
+"Verbo nidan (clase superior) con terminación ""く"" (arcaico)",v2k-k
+"Verbo nidan (clase superior) con terminación ""ぐ"" (arcaico)",v2g-k
+"Verbo nidan (clase superior) con terminación ""つ"" (arcaico)",v2t-k
+"Verbo nidan (clase superior) con terminación ""づ"" (arcaico)",v2d-k
+"Verbo nidan (clase superior) con terminación ""ふ"" (arcaico)",v2h-k
+"Verbo nidan (clase superior) con terminación ""ぶ"" (arcaico)",v2b-k
+"Verbo nidan (clase superior) con terminación ""む"" (arcaico)",v2m-k
+"Verbo nidan (clase superior) con terminación ""ゆ"" (arcaico)",v2y-k
+"Verbo nidan (clase superior) con terminación ""る"" (arcaico)",v2r-k
+"Verbo nidan (clase inferior) con terminación ""く"" (arcaico)",v2k-s
+"Verbo nidan (clase inferior) con terminación ""ぐ"" (arcaico)",v2g-s
+"Verbo nidan (clase inferior) con terminación ""す"" (arcaico)",v2s-s
+"Verbo nidan (clase inferior) con terminación ""ず"" (arcaico)",v2z-s
+"Verbo nidan (clase inferior) con terminación ""つ"" (arcaico)",v2t-s
+"Verbo nidan (clase inferior) con terminación ""づ"" (arcaico)",v2d-s
+"Verbo nidan (clase inferior) con terminación ""ぬ"" (arcaico)",v2n-s
+"Verbo nidan (clase inferior) con terminación ""ふ"" (arcaico)",v2h-s
+"Verbo nidan (clase inferior) con terminación ""ぶ"" (arcaico)",v2b-s
+"Verbo nidan (clase inferior) con terminación ""む"" (arcaico)",v2m-s
+"Verbo nidan (clase inferior) con terminación ""ゆ"" (arcaico)",v2y-s
+"Verbo nidan (clase inferior) con terminación ""る"" (arcaico)",v2r-s
+"Verbo nidan (clase inferior) con terminación ""う"" y conjugación ""うぇ"" (arcaico)",v2w-s
+Término de arquitectura,archit
+Término de astronomía,astron
+Término de béisbol,baseb
+Término de biología,biol
+Término de botánica,bot
+Término comercial,bus
+Término económico,econ
+Término de ingeniería,engr
+Término financiero,finc
+Término geológico,geol
+Término de derecho,law
+Término de mahjong,mahj
+Término médico,med
+Término musical,music
+Término sintoísta,Shinto
+Término shogi,shogi
+Término deportivo,sports
+Término sumo,sumo
+Término zoológico,zool
+"Término jocoso, humorístico",joc
+Término anatómico,anat
+Término cristiano,Christn
+Jerga de internet,net-sl
+Término antiguo,dated
+Término histórico,hist
+Término literario o formal,litf
+Familia o apellido,surname
+Nombre de lugar,place
+Nombre no clasificado,unclass
+Nombre de empresa,company
+Nombre de producto,product
+"Nombre de una obra de arte, literatura, música, etc.",work
+Nombre completo de una persona determinada,person
+"Nombre de pila, género no especificado",given
+Estación de tren,station
+Nombre de organización,organization
