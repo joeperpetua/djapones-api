@@ -1,4 +1,5 @@
 const translate = require('./translate_modules/translate');
+const translateV2 = require('./translate_modules/translateV2');
 const preTranslated = require('./translate_modules/translated-terms');
 const libs = require('./libs');
 const utils = require('./translate_modules/utils');
@@ -240,8 +241,7 @@ const getDefinitionData = async (array, separator, itemType) => {
                         if (err) return console.log(err);
                     });
                     // then translate it
-                    item = await translate.enToEs(item).catch(e => console.log(e));
-                    item = item.translations[0].translatedText;
+                    item = await translateV2.enToEs(item).catch(e => console.log(e));
                     console.log(item)
                 }
             }
@@ -277,40 +277,42 @@ const getDefinitionData = async (array, separator, itemType) => {
 
 const translateBulk = async (data) => {
 
-    let untranslatedDataArray = [];
-    
+    // let untranslatedDataArray = [];
+    let untranslatedDataString = ``;
 
     for (let dataObj = 0; dataObj < data.length; dataObj++) {
         for (let def = 0; def < data[dataObj].spanishDefs.length; def++) {
             if(data[dataObj].spanishDefs[def].text != ''){
-                untranslatedDataArray.push(data[dataObj].spanishDefs[def].text);
-                untranslatedDataArray.push('*');
+                untranslatedDataString += `${data[dataObj].spanishDefs[def].text}! `;
             }
         }
     }
     
     // translate array -- returns string
-    let translatedData = await translate.enToEs(untranslatedDataArray).catch(e => console.log(e));
-
-    // console.log('--------------------------------');
-    // console.log(translatedData.translations[0].translatedText);
+    let translatedData = await translateV2.enToEs(untranslatedDataString).catch(e => console.log(e));
+    
+    console.log('--------------------------------');
+    console.log(untranslatedDataString);
+    console.log('--------------------------------');
+    console.log(translatedData);
 
     // fix some spacing separators to all be the same --> , *,
-    translatedData.translations[0].translatedText = translatedData.translations[0].translatedText.replace(', * ,', ', *,');
+    // translatedData.translations[0].translatedText = translatedData.translations[0].translatedText.replace(', * ,', ', *,');
     // [[letter] *,]
-    translatedData.translations[0].translatedText = translatedData.translations[0].translatedText.replace(/(\w {1}\*{1},{1})/g, ', *,');
+    // translatedData.translations[0].translatedText = translatedData.translations[0].translatedText.replace(/(\w {1}\*{1},{1})/g, ', *,');
     // [. *,]
-    translatedData.translations[0].translatedText = translatedData.translations[0].translatedText.replace(/(\. {1}\*{1},{1})/g, ', *,');
+    // translatedData.translations[0].translatedText = translatedData.translations[0].translatedText.replace(/(\. {1}\*{1},{1})/g, ', *,');
     // [) *,]
-    translatedData.translations[0].translatedText = translatedData.translations[0].translatedText.replace(/(\) {1}\*{1},{1})/g, ', *,');
+    // translatedData.translations[0].translatedText = translatedData.translations[0].translatedText.replace(/(\) {1}\*{1},{1})/g, ', *,');
     
     // console.log('-----------------');
     // console.log(translatedData.translations[0].translatedText);
     // console.log('--------------------------------');
+    // translatedData = translatedData.replace(/\|/g, '');
     // string to grouped array by definitions
-    let translatedDataArray = translatedData.translations[0].translatedText.split(', *, ');
+    let translatedDataArray = translatedData.split('! ');
     // last index finishes with ', *' so replace it
-    translatedDataArray[translatedDataArray.length - 1] = translatedDataArray[translatedDataArray.length - 1].replace(', *', ''); 
+    // translatedDataArray[translatedDataArray.length - 1] = translatedDataArray[translatedDataArray.length - 1].replace(',*', ''); 
 
     //remove dups
     translatedDataArray = await utils.removeDuplicates(translatedDataArray);
@@ -326,8 +328,9 @@ const translateBulk = async (data) => {
     for (let dataObj = 0; dataObj < data.length; dataObj++) {
         for (let def = 0; def < data[dataObj].spanishDefs.length; def++) {
             if(data[dataObj].spanishDefs[def].text != ''){
+                console.log(data[dataObj].spanishDefs[def].text + ' ==> ' + translatedDataArray[counter]);
                 data[dataObj].spanishDefs[def].text = translatedDataArray[counter];
-                console.log(data[dataObj].spanishDefs[def].text);
+                
                 counter++;
             }
         }
