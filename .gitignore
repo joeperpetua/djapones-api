@@ -19,6 +19,7 @@ api-info/
 
 # production
 **/build
+server_log.txt
 
 # misc
 **/.DS_Store
