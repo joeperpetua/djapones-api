@@ -1,4 +1,4 @@
-const translate = require('./translate_modules/translate');
+// const translate = require('./translate_modules/translate');
 const translateV2 = require('./translate_modules/translateV2');
 const preTranslated = require('./translate_modules/translated-terms');
 const libs = require('./libs');
@@ -84,9 +84,7 @@ const fetchJisho = async (keyword, lang) => {
             break;
         
         case "es":
-            let tempTrans = await translate.esToEn(lowerCaseKeyword).then(el => {
-                return el.translations[0].translatedText;
-            }).catch(e => {
+            let tempTrans = await translateV2.esToEn(lowerCaseKeyword).catch(e => {
                 throw new Error(`Error en el manejo de la búsqueda para: ${keyword} - ${e}`);
             });
             translatedKeyword = tempTrans.toLocaleLowerCase();
@@ -291,10 +289,10 @@ const translateBulk = async (data) => {
     // translate array -- returns string
     let translatedData = await translateV2.enToEs(untranslatedDataString).catch(e => console.log(e));
     
-    console.log('--------------------------------');
-    console.log(untranslatedDataString);
-    console.log('--------------------------------');
-    console.log(translatedData);
+    // console.log('--------------------------------');
+    // console.log(untranslatedDataString);
+    // console.log('--------------------------------');
+    // console.log(translatedData);
 
     // fix some spacing separators to all be the same --> , *,
     // translatedData.translations[0].translatedText = translatedData.translations[0].translatedText.replace(', * ,', ', *,');
@@ -328,7 +326,7 @@ const translateBulk = async (data) => {
     for (let dataObj = 0; dataObj < data.length; dataObj++) {
         for (let def = 0; def < data[dataObj].spanishDefs.length; def++) {
             if(data[dataObj].spanishDefs[def].text != ''){
-                console.log(data[dataObj].spanishDefs[def].text + ' ==> ' + translatedDataArray[counter]);
+                // console.log(data[dataObj].spanishDefs[def].text + ' ==> ' + translatedDataArray[counter]);
                 data[dataObj].spanishDefs[def].text = translatedDataArray[counter];
                 
                 counter++;

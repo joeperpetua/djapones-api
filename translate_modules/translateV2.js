@@ -4,16 +4,16 @@ const url = `https://apiml.joeper.myds.me/translate?`;
 // Make a request es-en
 const esToEn = async (text) => {
     const req = encodeURI(`${url}q=${text}&tl=en`);
-
+    // console.log('going to fetch: ', req);
     let response = await fetch(req);
-    let json = response.json();
+    let json = await response.json();
     return json.translations[0].result;
 }
 
 // Make a request en-es
 const enToEs = async (text) => {
     const req = encodeURI(`${url}q=${text}&tl=es`);
-
+    // console.log('going to fetch: ', req);
     let response = await fetch(req);
     let json = await response.json();
     return json.translations[0].result;
