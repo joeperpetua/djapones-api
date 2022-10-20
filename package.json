@@ -2,10 +2,10 @@
   "name": "djapones",
   "version": "1.0.0",
   "description": "API for DJaponES site",
-  "main": "main.js",
+  "main": "new.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node main.js"
+    "start": "node new.js"
   },
   "keywords": [],
   "author": "Joel Perpetua",
