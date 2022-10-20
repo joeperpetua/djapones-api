@@ -1,5 +1,5 @@
 const utils = require('./translate_modules/utils');
-const translate = require('./translate_modules/translate');
+const translateV2 = require('./translate_modules/translateV2');
 
 const manageLangDetection = async (lowerCaseKeyword) => {
     let translatedKeyword;
@@ -20,10 +20,8 @@ const manageLangDetection = async (lowerCaseKeyword) => {
     // manage keyword format depending on the source lang
     
     if (detectedLang === 'es') {
-        translatedKeyword = await translate.esToEn(lowerCaseKeyword).then(el => {
-            return el.translations[0].translatedText;
-        }).catch(e => {
-            throw new Error(`Error en el manejo de la búsqueda para: ${lowerCaseKeyword} - ${e}`);
+        translatedKeyword = await translateV2.esToEn(lowerCaseKeyword).catch(e => {
+            throw new Error(`Error en el manejo de la búsqueda para: ${keyword} - ${e}`);
         });
 
         // make lowercase
