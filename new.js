@@ -4,8 +4,8 @@ const preTranslated = require('./translate_modules/translated-terms');
 const libs = require('./libs');
 const utils = require('./translate_modules/utils');
 const cors = require('cors')
-const express = require('express'); // Adding Express
-const app = express(); // Initializing Express
+const express = require('express');
+const app = express();
 const fetch = require('node-fetch');
 const fs = require('fs');
 
@@ -281,7 +281,7 @@ const translateBulk = async (data) => {
     for (let dataObj = 0; dataObj < data.length; dataObj++) {
         for (let def = 0; def < data[dataObj].spanishDefs.length; def++) {
             if(data[dataObj].spanishDefs[def].text != ''){
-                untranslatedDataString += `${data[dataObj].spanishDefs[def].text}! `;
+                untranslatedDataString += `${data[dataObj].spanishDefs[def].text}<br>`;
             }
         }
     }
@@ -307,11 +307,22 @@ const translateBulk = async (data) => {
     // console.log(translatedData.translations[0].translatedText);
     // console.log('--------------------------------');
     // translatedData = translatedData.replace(/\|/g, '');
-    // string to grouped array by definitions
-    let translatedDataArray = translatedData.split('! ');
     // last index finishes with ', *' so replace it
     // translatedDataArray[translatedDataArray.length - 1] = translatedDataArray[translatedDataArray.length - 1].replace(',*', ''); 
 
+    // add space if words are contiguous to semicolon after translation
+    translatedData = translatedData.replace(/;/g, '; ');
+    // replace double space by single space
+    translatedData = translatedData.replace(/\s\s/g, ' ');
+    // remove spaces surrounding separator
+    translatedData = translatedData.replace(/\s</g, '<');
+    translatedData = translatedData.replace(/>\s/g, '>');
+    // if translation took out br
+    translatedData = translatedData.replace(/<>/g, '<br>');
+    console.log(translatedData);
+    // string to grouped array by definitions
+    let translatedDataArray = translatedData.split('<br>');
+    
     //remove dups
     translatedDataArray = await utils.removeDuplicates(translatedDataArray);
 
@@ -328,13 +339,10 @@ const translateBulk = async (data) => {
             if(data[dataObj].spanishDefs[def].text != ''){
                 // console.log(data[dataObj].spanishDefs[def].text + ' ==> ' + translatedDataArray[counter]);
                 data[dataObj].spanishDefs[def].text = translatedDataArray[counter];
-                
                 counter++;
             }
         }
     }
-
-
 
     return data;
 }
