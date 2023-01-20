@@ -18,6 +18,7 @@
     "express": "^4.17.1",
     "node-fetch": "^2.6.7",
     "nodemon": "^2.0.20",
+    "request": "^2.88.2",
     "wanakana": "^4.0.2"
   }
 }

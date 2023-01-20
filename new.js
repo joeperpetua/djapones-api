@@ -36,7 +36,8 @@ app.get('/', cors(corsOptions), async (req, res) => {
 
     const response = await fetchJisho(req.query.word, req.query.lang)
     .catch(e => {
-        res.status(500).send({error: `Error de busqueda en el servidor. ${e.message}`, status: 500});
+        console.error(e);
+        res.status(500).send({error: `Error de busqueda en el servidor. ${e}`, status: 500});
         return false
     });
 
@@ -69,6 +70,7 @@ app.get('/', cors(corsOptions), async (req, res) => {
 });
 
 const fetchJisho = async (keyword, lang) => {
+    console.log(keyword);
     let lowerCaseKeyword = keyword.toLocaleLowerCase();
     let translatedKeyword;
     
@@ -275,7 +277,6 @@ const getDefinitionData = async (array, separator, itemType) => {
 
 const translateBulk = async (data) => {
 
-    // let untranslatedDataArray = [];
     let untranslatedDataString = ``;
 
     for (let dataObj = 0; dataObj < data.length; dataObj++) {
@@ -287,28 +288,7 @@ const translateBulk = async (data) => {
     }
     
     // translate array -- returns string
-    let translatedData = await translateV2.enToEs(untranslatedDataString).catch(e => console.log(e));
-    
-    // console.log('--------------------------------');
-    // console.log(untranslatedDataString);
-    // console.log('--------------------------------');
-    // console.log(translatedData);
-
-    // fix some spacing separators to all be the same --> , *,
-    // translatedData.translations[0].translatedText = translatedData.translations[0].translatedText.replace(', * ,', ', *,');
-    // [[letter] *,]
-    // translatedData.translations[0].translatedText = translatedData.translations[0].translatedText.replace(/(\w {1}\*{1},{1})/g, ', *,');
-    // [. *,]
-    // translatedData.translations[0].translatedText = translatedData.translations[0].translatedText.replace(/(\. {1}\*{1},{1})/g, ', *,');
-    // [) *,]
-    // translatedData.translations[0].translatedText = translatedData.translations[0].translatedText.replace(/(\) {1}\*{1},{1})/g, ', *,');
-    
-    // console.log('-----------------');
-    // console.log(translatedData.translations[0].translatedText);
-    // console.log('--------------------------------');
-    // translatedData = translatedData.replace(/\|/g, '');
-    // last index finishes with ', *' so replace it
-    // translatedDataArray[translatedDataArray.length - 1] = translatedDataArray[translatedDataArray.length - 1].replace(',*', ''); 
+    let translatedData = await translateV2.enToEsPOST(untranslatedDataString).catch(e => console.log(e));
 
     // add space if words are contiguous to semicolon after translation
     translatedData = translatedData.replace(/;/g, '; ');
@@ -351,8 +331,3 @@ const translateBulk = async (data) => {
 app.listen(7000, function() {
   console.log('Running on port 7000.');
 });
-
-
-
-
-
