@@ -5,7 +5,7 @@
   "main": "new.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node new.js"
+    "start": "node main.js"
   },
   "keywords": [],
   "author": "Joel Perpetua",
@@ -14,8 +14,10 @@
     "@google-cloud/translate": "^6.1.0",
     "an-array-of-english-words": "^2.0.0",
     "an-array-of-spanish-words": "^2.0.0",
+    "axios": "^1.4.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "form-data": "^4.0.0",
     "node-fetch": "^2.6.7",
     "nodemon": "^2.0.20",
     "wanakana": "^4.0.2"

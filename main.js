@@ -1,12 +1,13 @@
-const translate = require('./translate_modules/translate');
+// const translate = require('./translate_modules/translate');
+const translateV2 = require('./translate_modules/translateV2');
 const preTranslated = require('./translate_modules/translated-terms');
+const libs = require('./libs');
 const utils = require('./translate_modules/utils');
 const cors = require('cors')
 const express = require('express'); // Adding Express
 const app = express(); // Initializing Express
 const fetch = require('node-fetch');
 const fs = require('fs');
-
 
 var whitelist = ['http://localhost:3000', 'https://djapones.web.app', 'https://djapones.firebaseapp.com'] 
 var corsOptions = {
@@ -19,82 +20,98 @@ var corsOptions = {
   }
 }
 
+app.get('/', cors(corsOptions), async (req, res) => {
 
-// Wrapping the Puppeteer browser logic in a GET request
-app.get('/', cors(corsOptions), function(req, res) {
-  const start = Date.now();
-  let time;
-  let response = {
-    code: '',
-    data: []
-  };
+    if (req.query.word == undefined || req.query.word == null || req.query.word == '') {
+        res.status(400).send({error: 'Término no especificado, petición incorrecta.', status: 400});
+        return false;
+    }
 
-  if (req.query.src == undefined || req.query.src == null || req.query.src == '') {
-    res.status(400).send({error: 'Idioma de origen no especificado, petición incorrecta.', code: 400});
-    return false;
-  }
+    if (req.query.lang == undefined || req.query.lang == null || req.query.lang == '') {
+        res.status(400).send({error: 'Lenguaje no especificado, petición incorrecta.', status: 400});
+        return false;
+    }
 
-  if (req.query.word == undefined || req.query.word == null || req.query.word == '') {
-    res.status(400).send({error: 'Termino no especificado, petición incorrecta.', code: 400});
-    return false;
-  }
 
-  // conjugator.unconjugate(req.query.word)
 
-  (async () => {
-    res.status(200).send(await fetchJisho(req.query.word, req.query.src).catch(e => {
-        console.log(`Error found: ${e}\n${e.stack}`);
-        return {error: `Error de busqueda en el servidor, por favor contacte con los administradores: ${e}, HTTP 500.`, code: 500};
-    }));
-  })();
+    const response = await fetchJisho(req.query.word, req.query.lang)
+    .catch(e => {
+        res.status(500).send({error: `Error de busqueda en el servidor. ${e.message}`, status: 500});
+        return false
+    });
 
+    let query = {};
+
+   if(response.data){
+       console.log()
+        query = {
+            status: response.meta.status,
+            data: []
+        };
+        const conjugation = await utils.isConjugation(req.query.word);
+
+        for (let result = 0; result < response.data.length; result++) {
+            query.data.push(await formatResult(response.data[result], conjugation)); 
+        }
+
+        query.data = await translateBulk(query.data).catch(e => e);
+    }else{
+        query = response;
+    }
+    
+    
+    
+    if(!res.writableFinished){
+        console.log(res.writableFinished)
+        res.status(200).send(query);
+    }
+    
 });
 
-const fetchJisho = async (keyword, src) => {
-    let url = '';
-
-    // check src lang
-    switch (src) {
-    case 'jp':
-        let lowerCaseJP = keyword.toLocaleLowerCase();
-        console.log(lowerCaseJP);
-        url = `https://jisho.org/api/v1/search/words?keyword=${lowerCaseJP}`;
-        break;
+const fetchJisho = async (keyword, lang) => {
+    let lowerCaseKeyword = keyword.toLocaleLowerCase();
+    let translatedKeyword;
     
-    case 'es':
-        let tempTrans = await translate.esToEn(keyword);
-        let lowerCaseES = tempTrans.toLocaleLowerCase();
-        console.log(lowerCaseES);
-        url = `https://jisho.org/api/v1/search/words?keyword=${lowerCaseES}`;
-        break;
+    switch (lang) {
+        case "auto":
+            translatedKeyword = await libs.manageLangDetection(lowerCaseKeyword);
+            console.log('-----', translatedKeyword, lang);
+            break;
 
-    default:
-        console.log(`Unsupported lang, ${src}`);
-        return {error: `Idioma de origen no soportado: ${src}. Los idiomas soportados son español (es) y japonés (jp). Petición incorrecta.`, code: 400};
+        case "jp":
+            translatedKeyword = lowerCaseKeyword;
+            console.log('-----', translatedKeyword, lang);
+            break;
+        
+        case "es":
+            let tempTrans = await translateV2.esToEn(lowerCaseKeyword).catch(e => {
+                throw new Error(`Error en el manejo de la búsqueda para: ${keyword} - ${e}`);
+            });
+            translatedKeyword = tempTrans.toLocaleLowerCase();
+            console.log('-----', translatedKeyword, lang);
+            break;
+        default:
+            throw new Error(`Lenguaje no válido:  ${lang}.`);
+            break;
     }
+
+    
+
+    let url = `https://jisho.org/api/v1/search/words?keyword=${translatedKeyword}`;
 
     // fetch jisho
    const res = await fetch(encodeURI(url))
    .then(response => response.json())
-   .then(res => res.data.length != 0 ? res : {error: `No se ha encontrado ningún resultado para la busqueda de:  ${keyword}`});
-  
-   let query = {
-        status: res.meta.status,
-        data: []
-    };
-
-   if(res.data){
-        const conjugation = await utils.isConjugation(keyword, src);
-        for (let result = 0; result < res.data.length; result++) {
-            query.data.push(await formatResult(res.data[result], conjugation)); 
+   .then(res => { 
+        if(res.data.length != 0){
+            return res;
+        }else{
+            throw new Error(`No se ha encontrado ningún resultado para la busqueda de:  ${keyword}`);
         }
-        query.data = await translateBulk(query.data).catch(e => e);
-        //console.log(query.data)
-    }else{
-        query = res;
-    }
+   });
 
-   return query;
+   // console.log(res)
+   return res;
 }
 
 const formatResult = async (result, conjugation) => {
@@ -134,7 +151,7 @@ const formatResult = async (result, conjugation) => {
     for (let sense = 0; sense < result.senses.length; sense++) {
             
         // ignore wikipedia definitions
-        if (result.senses[sense].parts_of_speech[0] != 'Wikipedia definition') {
+        if (result.senses[sense].parts_of_speech[0] != 'Wikipedia definition' && result.senses[sense].parts_of_speech[0] != 'links') {
             formattedResult.spanishDefs.push(await getDefinitions(result.senses[sense]));
         }
     }
@@ -164,9 +181,6 @@ const getDefinitions = async (sense) => {
         text: ''
     };
 
-
-
-
     tempDefinition.type = await getDefinitionData(sense.parts_of_speech, ',', 'partOfSpeech');
     tempDefinition.tags = await getDefinitionData(sense.tags, ',', 'tag');
     tempDefinition.related = await getDefinitionData(sense.see_also, ',', 'related');
@@ -174,8 +188,6 @@ const getDefinitions = async (sense) => {
     tempDefinition.antonyms = await getDefinitionData(sense.antonyms, ',', 'antonyms');
     tempDefinition.info = await getDefinitionData(sense.info, ',', 'info');
     tempDefinition.text = await getDefinitionData(sense.english_definitions, ';', 'text');
-
-
 
     return tempDefinition;
 }
@@ -197,17 +209,17 @@ const getDefinitionData = async (array, separator, itemType) => {
 
                     if(term[2]){ // has to concat -- if not match then word is not in the list
                         if (term && item.toLowerCase().includes(term[0].toLowerCase())) {
-                            console.log(`found tag for concat ----- ${item} -------- ${term[0]}}`);
+                            // console.log(`found tag for concat ----- ${item} -------- ${term[0]}}`);
                             var regEx = new RegExp(term[0], "i");
                             item = item.replace(regEx, term[1]); 
-                            console.log(`Ends up as -> ${item}`);
+                            // console.log(`Ends up as -> ${item}`);
                             found = true;
                         }
                     }else{ //does not have to concat -- replace all -- if not match then word is not in the list
                         if (term && item.toLowerCase() === term[0].toLowerCase()) {
-                            console.log(`found tag to replace all ----- ${item} -------- ${term[0]}}`);
+                            // console.log(`found tag to replace all ----- ${item} -------- ${term[0]}}`);
                             item = term[1];
-                            console.log(`Ends up as -> ${item}`);
+                            // console.log(`Ends up as -> ${item}`);
                             found = true;
                         }
                     }
@@ -222,8 +234,7 @@ const getDefinitionData = async (array, separator, itemType) => {
                         if (err) return console.log(err);
                     });
                     // then translate it
-                    item = await translate.enToEs(item).catch(e => console.log(e));
-                    item = item.translations[0].translatedText;
+                    item = await translateV2.enToEs(item, false).catch(e => console.log(e));
                     console.log(item)
                 }
             }
@@ -258,36 +269,29 @@ const getDefinitionData = async (array, separator, itemType) => {
 }
 
 const translateBulk = async (data) => {
-    let bulkText = '';
-    let translationBulk = '';
-
-    let untranslatedDataArray = [];
-    
+    let untranslatedDataString = ``;
 
     for (let dataObj = 0; dataObj < data.length; dataObj++) {
         for (let def = 0; def < data[dataObj].spanishDefs.length; def++) {
             if(data[dataObj].spanishDefs[def].text != ''){
-                untranslatedDataArray.push(data[dataObj].spanishDefs[def].text);
-                untranslatedDataArray.push('*');
+                untranslatedDataString += `<span>${data[dataObj].spanishDefs[def].text}</span>`;
             }
         }
     }
     
     // translate array -- returns string
-    let translatedData = await translate.enToEs(untranslatedDataArray).catch(e => console.log(e));
+    let translatedData = await translateV2.enToEs(untranslatedDataString, true).catch(e => console.log(e));
+    
+    // console.log('--------------------------------');
+    // console.log(untranslatedDataString);
+    // console.log('--------------------------------');
+    // console.log(translatedData);
 
-    // string to grouped array by definitions
-    translatedData.translations[0].translatedText = translatedData.translations[0].translatedText.replace(', * ,', ', *,');
-    let translatedDataArray = translatedData.translations[0].translatedText.split(', *, ');
-    // last index finishes with ', *' so replace it
-    translatedDataArray[translatedDataArray.length - 1] = translatedDataArray[translatedDataArray.length - 1].replace(', *', ''); 
+    translatedData = translatedData.replaceAll('<span>', '');
+    let translatedDataArray = translatedData.split('</span>');
 
     //remove dups
     translatedDataArray = await utils.removeDuplicates(translatedDataArray);
-
-    translatedDataArray.forEach(element => {
-        console.log(element)
-    });
 
     console.log(data.length, translatedDataArray.length);
 
@@ -296,14 +300,12 @@ const translateBulk = async (data) => {
     for (let dataObj = 0; dataObj < data.length; dataObj++) {
         for (let def = 0; def < data[dataObj].spanishDefs.length; def++) {
             if(data[dataObj].spanishDefs[def].text != ''){
+                // console.log(data[dataObj].spanishDefs[def].text + ' ==> ' + translatedDataArray[counter]);
                 data[dataObj].spanishDefs[def].text = translatedDataArray[counter];
-                console.log(data[dataObj].spanishDefs[def].text);
                 counter++;
             }
         }
     }
-
-
 
     return data;
 }

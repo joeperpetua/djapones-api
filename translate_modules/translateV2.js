@@ -1,22 +1,46 @@
-const fetch = require('node-fetch');
-const url = `https://apiml.joeper.myds.me/translate?`;
+const axios = require('axios');
+const url = `https://apiml.joeper.myds.me/djapones`;
 
 // Make a request es-en
 const esToEn = async (text) => {
-    const req = encodeURI(`${url}q=${text}&tl=en`);
-    // console.log('going to fetch: ', req);
-    let response = await fetch(req);
-    let json = await response.json();
-    return json.translations[0].result;
+    try {
+        const response = await axios.get(encodeURI(`${url}?q=${text}&tl=eng&sl=spa`));
+        return response.data.translations[0].result;
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 // Make a request en-es
-const enToEs = async (text) => {
-    const req = encodeURI(`${url}q=${text}&tl=es`);
-    // console.log('going to fetch: ', req);
-    let response = await fetch(req);
-    let json = await response.json();
-    return json.translations[0].result;
+const enToEs = async (text, html) => {
+    if (html){
+        let data = new FormData();
+        data.append('q', text);
+        data.append('tl', 'spa');
+        data.append('sl', 'eng');
+
+        let config = {
+            method: 'post',
+            maxBodyLength: Infinity,
+            url: url,
+            data : data
+        };
+
+        try {
+            const response = await axios.request(config);
+            return response.data.translations[0].result;
+        } catch (error) {
+            console.error(error);
+        }
+        
+    }else {
+        try {
+            const response = await axios.get(encodeURI(`${url}?q=${text}&tl=spa&sl=eng`));
+            return response.data.translations[0].result;
+        } catch (error) {
+            console.error(error);
+        }
+    }
 }
 
 exports.enToEs = enToEs;
