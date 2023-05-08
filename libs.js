@@ -21,7 +21,7 @@ const manageLangDetection = async (lowerCaseKeyword) => {
     
     if (detectedLang === 'es') {
         translatedKeyword = await translateV2.esToEn(lowerCaseKeyword).catch(e => {
-            throw new Error(`Error en el manejo de la búsqueda para: ${keyword} - ${e}`);
+            throw new Error(`Error en el manejo de la búsqueda para: ${lowerCaseKeyword} - ${e}`);
         });
 
         // make lowercase
