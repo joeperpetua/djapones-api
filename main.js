@@ -98,20 +98,21 @@ const fetchJisho = async (keyword, lang) => {
     
 
     let url = `https://jisho.org/api/v1/search/words?keyword=${translatedKeyword}`;
-
+    const options = {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36' }
+    }
     // fetch jisho
-   const res = await fetch(encodeURI(url))
-   .then(response => response.json())
-   .then(res => { 
-        if(res.data.length != 0){
-            return res;
-        }else{
-            throw new Error(`No se ha encontrado ningún resultado para la busqueda de:  ${keyword}`);
-        }
-   });
+    const res = await fetch(encodeURI(url), options).catch(err => {
+        throw new Error(`Error al procesar API call:  ${err}`)
+    });
+    const response = await res.json();
+    
+    if(response.data.length === 0){
+        throw new Error(`No se ha encontrado ningún resultado para la busqueda de:  ${keyword}`);
+    }
 
    // console.log(res)
-   return res;
+   return response;
 }
 
 const formatResult = async (result, conjugation) => {
